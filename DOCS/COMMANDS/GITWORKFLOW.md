@@ -4,14 +4,7 @@
 
 ## Purpose
 
-Provide a simple, repeatable workflow for shipping changes to the repository:
-
-1. Create a new branch from the current state
-2. Commit changes with an appropriate message
-3. Push the branch to the remote repository
-4. Create a pull request
-
-GITWORKFLOW standardizes the git operations needed to submit work for review. It assumes you have already implemented and validated your changes locally.
+Provide a simple, repeatable workflow for shipping changes to the repository. GITWORKFLOW standardizes the git operations needed to submit work for review. It assumes you have already implemented and validated your changes locally.
 
 ## Inputs (Preferred)
 
@@ -48,22 +41,4 @@ GITWORKFLOW standardizes the git operations needed to submit work for review. It
 - Remote push fails → check authentication and remote configuration
 - GitHub CLI not available → provide manual instructions for creating PR via web interface
 - Uncommitted changes conflict with branch creation → stash changes or commit them first
-
-## Example Usage
-
-```bash
-# After implementing changes and validating them
-# 1. Create branch
-git checkout -b add-git-workflow-command
-
-# 2. Stage and commit
-git add DOCS/COMMANDS/GITWORKFLOW.md
-git commit -m "Add GITWORKFLOW command for branch, commit, push, PR workflow"
-
-# 3. Push
-git push -u origin add-git-workflow-command
-
-# 4. Create PR
-gh pr create --title "Add GITWORKFLOW command" --body "Adds a new command specification for the standard git workflow: create branch, commit, push, and create PR."
-```
 
