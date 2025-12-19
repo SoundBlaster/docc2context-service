@@ -54,8 +54,9 @@ GET /health
 ### Phase 1: The "Engine" (Backend)
 
 * Task 1.1: Build a Dockerfile that includes the Swift runtime + Python 3.10.
-* Task 1.2: Implement the SubprocessManager to handle CLI execution and exit code mapping.
-* Task 1.3: Create a CleanupMiddleware or BackgroundTasks routine to wipe /tmp/{uuid}.
+* Task 1.2: Deploy the CLI app from the source code placed in https://github.com/SoundBlaster/docc2context (clone, build Swift binary, integrate into Docker image).
+* Task 1.3: Implement the SubprocessManager to handle CLI execution and exit code mapping.
+* Task 1.4: Create a CleanupMiddleware or BackgroundTasks routine to wipe /tmp/{uuid}.
 
 ### Phase 2: The "Portal" (Frontend)
 

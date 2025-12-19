@@ -29,9 +29,39 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.2: Core FastAPI Application Structure
+### Task 1.2: Deploy the CLI App from Source Code
 **Priority:** Critical  
 **Dependencies:** Task 1.1  
+**References:** https://github.com/SoundBlaster/docc2context
+
+**Subtasks:**
+1. Clone or download the docc2context source code from GitHub
+2. Build the Swift CLI binary from source:
+   - Install Swift build tools in Docker image (if not already present)
+   - Compile the CLI using Swift Package Manager
+   - Ensure binary is built for Linux (if deploying on Linux)
+3. Integrate the binary into the Docker image:
+   - Copy the compiled binary to a standard location (e.g., `/usr/local/bin/docc2context`)
+   - Ensure binary has execute permissions
+   - Verify binary is accessible in PATH
+4. Test binary execution:
+   - Verify `docc2context --version` or similar command works
+   - Ensure binary can be executed from Python subprocess
+
+**Acceptance Criteria:**
+- [ ] CLI source code is accessible in the build context
+- [ ] Swift CLI binary is successfully compiled
+- [ ] Binary is installed in Docker image at a standard location
+- [ ] Binary is executable and accessible from Python subprocess
+- [ ] Binary responds to basic commands (version check, help, etc.)
+
+**Estimated Time:** 4-6 hours
+
+---
+
+### Task 1.3: Core FastAPI Application Structure
+**Priority:** Critical  
+**Dependencies:** Task 1.2  
 **References:** PRD Section 2, Section 4
 
 **Subtasks:**
@@ -54,9 +84,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.3: File Upload & Validation Service
+### Task 1.4: File Upload & Validation Service
 **Priority:** Critical  
-**Dependencies:** Task 1.2  
+**Dependencies:** Task 1.3  
 **References:** PRD FR1, FR2, Section 2
 
 **Subtasks:**
@@ -83,9 +113,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.4: Workspace Management Service
+### Task 1.5: Workspace Management Service
 **Priority:** Critical  
-**Dependencies:** Task 1.3  
+**Dependencies:** Task 1.4  
 **References:** PRD Section 2, Section 6
 
 **Subtasks:**
@@ -110,9 +140,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.5: SubprocessManager for Swift CLI Execution
+### Task 1.6: SubprocessManager for Swift CLI Execution
 **Priority:** Critical  
-**Dependencies:** Task 1.4  
+**Dependencies:** Task 1.5  
 **References:** PRD FR4, Section 2
 
 **Subtasks:**
@@ -139,9 +169,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.6: Conversion Pipeline & Response Streaming
+### Task 1.7: Conversion Pipeline & Response Streaming
 **Priority:** Critical  
-**Dependencies:** Task 1.5  
+**Dependencies:** Task 1.6  
 **References:** PRD FR3, Section 2
 
 **Subtasks:**
@@ -168,9 +198,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
-### Task 1.7: Health Check Endpoint
+### Task 1.8: Health Check Endpoint
 **Priority:** Medium  
-**Dependencies:** Task 1.2  
+**Dependencies:** Task 1.3  
 **References:** PRD Section 4
 
 **Subtasks:**
@@ -194,7 +224,7 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ### Task 2.1: Frontend Project Setup
 **Priority:** High  
-**Dependencies:** Task 1.2 (CORS configured)  
+**Dependencies:** Task 1.3 (CORS configured)  
 **References:** PRD Section 5
 
 **Subtasks:**
@@ -306,7 +336,7 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ### Task 3.1: Security Hardening
 **Priority:** High  
-**Dependencies:** Task 1.6  
+**Dependencies:** Task 1.7  
 **References:** PRD Task 3.1, Section 3
 
 **Subtasks:**
@@ -334,7 +364,7 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ### Task 3.2: Unit & Integration Tests
 **Priority:** High  
-**Dependencies:** Task 1.6, Task 2.4  
+**Dependencies:** Task 1.7, Task 2.4  
 **References:** PRD Task 3.2
 
 **Subtasks:**
@@ -401,17 +431,18 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 **Critical Path:**
 1. Docker Setup (1.1)
-2. FastAPI Structure (1.2)
-3. File Upload & Validation (1.3)
-4. Workspace Management (1.4)
-5. SubprocessManager (1.5)
-6. Conversion Pipeline (1.6)
-7. Frontend Implementation (2.1-2.4)
-8. Testing & Hardening (3.1-3.2)
+2. Deploy CLI App (1.2)
+3. FastAPI Structure (1.3)
+4. File Upload & Validation (1.4)
+5. Workspace Management (1.5)
+6. SubprocessManager (1.6)
+7. Conversion Pipeline (1.7)
+8. Frontend Implementation (2.1-2.4)
+9. Testing & Hardening (3.1-3.2)
 
 **Dependencies Graph:**
 - Phase 1 tasks are sequential (each depends on previous)
-- Phase 2 can start after Task 1.2 (CORS)
+- Phase 2 can start after Task 1.3 (CORS)
 - Phase 3 requires completion of Phase 1 and Phase 2
 
 **Risk Items:**
