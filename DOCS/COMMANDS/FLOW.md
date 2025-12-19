@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Defines the canonical iterative workflow for **DocC2Context Service** development. This four-step cycle ensures systematic progression through the PRD work plan (PRD §5) while maintaining clean task tracking and validation.
+Defines the canonical iterative workflow for **DocC2Context Service** development. This four-step cycle ensures systematic progression through the PRD work plan ([PRD §5](../PRD.md#5-implementation-roadmap-refined)) while maintaining clean task tracking and validation.
 
 FLOW is the top-level orchestrator; each step is a dedicated command with its own responsibility.
 
@@ -25,33 +25,42 @@ FLOW is the top-level orchestrator; each step is a dedicated command with its ow
 
 ### 1. SELECT
 
-See `DOCS/COMMANDS/SELECT.md` for details.
+See [SELECT.md](SELECT.md) for details.
 
-Choose the next highest-priority task and record it to `DOCS/INPROGRESS/next.md`.
+Choose the next highest-priority task and record it to [`DOCS/INPROGRESS/next.md`](../../INPROGRESS/next.md).
 
 ---
 
 ### 2. PLAN
 
-See `DOCS/COMMANDS/PLAN.md` for details.
+See [PLAN.md](PLAN.md) for details.
 
-Transform the selected task into an implementation-ready PRD at `DOCS/INPROGRESS/{ID}_{Title}.md`.
+Transform the selected task into an implementation-ready PRD at [`DOCS/INPROGRESS/{ID}_{Title}.md`](../../INPROGRESS/).
 
 ---
 
 ### 3. EXECUTE
 
-See `DOCS/COMMANDS/EXECUTE.md` for details.
+See [EXECUTE.md](EXECUTE.md) for details.
 
 Implement the planned task following TDD, validate like CI, and update task documentation.
+
+**Git Operations:**
+- Pre-flight:
+  - **[Verify git state](PRIMITIVES/VERIFY_GIT_STATE.md)**
+  - **[Create branch](PRIMITIVES/CREATE_BRANCH.md)** (if starting new work)
+- Finalization: Use **[GIT_FINALIZATION](GIT_FINALIZATION.md)** (recommended) or **[GITWORKFLOW](GITWORKFLOW.md)**, or individual primitives:
+  - **[Commit changes](PRIMITIVES/COMMIT_CHANGES.md)**
+  - **[Push branch](PRIMITIVES/PUSH_BRANCH.md)**
+  - **[Create PR](PRIMITIVES/CREATE_PR.md)**
 
 ---
 
 ### 4. ARCHIVE
 
-See `DOCS/COMMANDS/ARCHIVE.md` for details.
+See [ARCHIVE.md](ARCHIVE.md) for details.
 
-Move completed task PRDs to `DOCS/TASKS_ARCHIVE/` and update the archive index.
+Move completed task PRDs to [`DOCS/TASKS_ARCHIVE/`](../../TASKS_ARCHIVE/) and update the archive index.
 
 ---
 
@@ -61,7 +70,7 @@ Move completed task PRDs to `DOCS/TASKS_ARCHIVE/` and update the archive index.
 - Starting a new development session
 - Completing a task and ready for the next one
 - Unsure what to work on next
-- Need to maintain systematic progress through PRD §5
+- Need to maintain systematic progress through [PRD §5](../PRD.md#5-implementation-roadmap-refined)
 
 **Skip this flow when:**
 - Handling urgent hotfixes (can return to flow after)
@@ -71,19 +80,19 @@ Move completed task PRDs to `DOCS/TASKS_ARCHIVE/` and update the archive index.
 ## Flow Discipline
 
 1. **Complete the cycle**: Don't skip steps. Each step has essential outputs for the next.
-2. **One task at a time**: Finish EXECUTE before running SELECT again.
-3. **Validate always**: Never skip EXECUTE validation, even for "simple" changes.
-4. **Archive regularly**: Keep `DOCS/INPROGRESS/` clean to avoid confusion.
+2. **One task at a time**: Finish [EXECUTE](EXECUTE.md) before running [SELECT](SELECT.md) again.
+3. **Validate always**: Never skip [EXECUTE](EXECUTE.md) validation, even for "simple" changes.
+4. **Archive regularly**: Keep [`DOCS/INPROGRESS/`](../../INPROGRESS/) clean to avoid confusion.
 
 ## Exceptions
 
-- **No tasks available**: SELECT will report "Nothing to do" — project may be complete.
-- **Validation fails**: Stay in EXECUTE until all checks pass; do not proceed to ARCHIVE.
-- **Dependencies blocked**: SELECT may allow selection but flag for resolution in PLAN.
+- **No tasks available**: [SELECT](SELECT.md) will report "Nothing to do" — project may be complete.
+- **Validation fails**: Stay in [EXECUTE](EXECUTE.md) until all checks pass; do not proceed to [ARCHIVE](ARCHIVE.md).
+- **Dependencies blocked**: [SELECT](SELECT.md) may allow selection but flag for resolution in [PLAN](PLAN.md).
 
 ## Related Documentation
 
-- `DOCS/COMMANDS/README.md` — Command system overview
-- `DOCS/COMMANDS/PROGRESS.md` — Status tracking across tasks
-- `DOCS/PRD.md` — Canonical requirements and work plan
-- `DOCS/Workplan.md` — Detailed task breakdown with acceptance criteria
+- [README.md](README.md) — Command system overview
+- [PROGRESS.md](PROGRESS.md) — Status tracking across tasks
+- [PRD.md](../PRD.md) — Canonical requirements and work plan
+- [Workplan.md](../Workplan.md) — Detailed task breakdown with acceptance criteria
