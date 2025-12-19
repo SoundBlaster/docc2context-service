@@ -45,6 +45,15 @@ See `DOCS/COMMANDS/EXECUTE.md` for details.
 
 Implement the planned task following TDD, validate like CI, and update task documentation.
 
+**Git Operations:**
+- Pre-flight:
+  - **[Verify git state](PRIMITIVES/VERIFY_GIT_STATE.md)**
+  - **[Create branch](PRIMITIVES/CREATE_BRANCH.md)** (if starting new work)
+- Finalization: Use **[GITWORKFLOW](GITWORKFLOW.md)** or individual primitives:
+  - **[Commit changes](PRIMITIVES/COMMIT_CHANGES.md)**
+  - **[Push branch](PRIMITIVES/PUSH_BRANCH.md)**
+  - **[Create PR](PRIMITIVES/CREATE_PR.md)**
+
 ---
 
 ### 4. ARCHIVE
