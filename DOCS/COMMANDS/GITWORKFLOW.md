@@ -23,35 +23,15 @@ GITWORKFLOW standardizes the git operations needed to submit work for review. It
 
 ## Algorithm
 
-1. **[Verify git state](PRIMITIVES/VERIFY_GIT_STATE.md):**
-   - Confirm you are in a git repository: `git rev-parse --git-dir`
-   - Check current branch: `git branch --show-current`
-   - Verify working tree status: `git status --porcelain`
-   - If on `main` or `master`, proceed to create a new branch. If already on a feature branch, confirm before proceeding.
+1. **[Verify git state](PRIMITIVES/VERIFY_GIT_STATE.md)**
 
-2. **[Create new branch](PRIMITIVES/CREATE_BRANCH.md):**
-   - Branch name should be descriptive and follow repository conventions (e.g., `task-{id}-{description}`, `feature/{name}`, `fix/{name}`)
-   - Create and checkout the new branch: `git checkout -b {branch-name}`
-   - If branch name is not provided, derive it from the current task or work context
+2. **[Create new branch](PRIMITIVES/CREATE_BRANCH.md)**
 
-3. **[Stage and commit changes](PRIMITIVES/COMMIT_CHANGES.md):**
-   - Review what will be committed: `git status`
-   - Stage all changes: `git add .` (or stage specific files as needed)
-   - Commit with a clear message: `git commit -m "{commit-message}"`
-   - Commit message should be descriptive and follow repository conventions (e.g., conventional commits format if used)
+3. **[Stage and commit changes](PRIMITIVES/COMMIT_CHANGES.md)**
 
-4. **[Push branch to remote](PRIMITIVES/PUSH_BRANCH.md):**
-   - Push the branch: `git push -u origin {branch-name}`
-   - The `-u` flag sets upstream tracking for the branch
+4. **[Push branch to remote](PRIMITIVES/PUSH_BRANCH.md)**
 
-5. **[Create pull request](PRIMITIVES/CREATE_PR.md):**
-   - Use GitHub CLI if available: `gh pr create --title "{title}" --body "{description}"`
-   - Or provide instructions to create PR via GitHub web interface
-   - PR title should match or be derived from the commit message
-   - PR description should include:
-     - What changes were made
-     - Why the changes were made
-     - Any relevant context or references to issues/tasks
+5. **[Create pull request](PRIMITIVES/CREATE_PR.md)**
 
 ## Output
 
