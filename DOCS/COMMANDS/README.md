@@ -14,6 +14,7 @@ as **prompts/instructions for a coding agent** (or a human), not as executable s
 | **EXECUTE** | Pre-flight → implement → validate → finalize | [EXECUTE.md](./EXECUTE.md) |
 | **PROGRESS** | Optional checklist/progress updates | [PROGRESS.md](./PROGRESS.md) |
 | **ARCHIVE** | Move completed task PRDs out of the way | [ARCHIVE.md](./ARCHIVE.md) |
+| **GITWORKFLOW** | Create branch, commit, push, create PR | [GITWORKFLOW.md](./GITWORKFLOW.md) |
 
 ## Source Of Truth
 
