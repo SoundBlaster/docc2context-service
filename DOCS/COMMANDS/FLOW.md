@@ -49,7 +49,7 @@ Implement the planned task following TDD, validate like CI, and update task docu
 - Pre-flight:
   - **[Verify git state](PRIMITIVES/VERIFY_GIT_STATE.md)**
   - **[Create branch](PRIMITIVES/CREATE_BRANCH.md)** (if starting new work)
-- Finalization: Use **[GITWORKFLOW](GITWORKFLOW.md)** or individual primitives:
+- Finalization: Use **[GIT_FINALIZATION](GIT_FINALIZATION.md)** (recommended) or **[GITWORKFLOW](GITWORKFLOW.md)**, or individual primitives:
   - **[Commit changes](PRIMITIVES/COMMIT_CHANGES.md)**
   - **[Push branch](PRIMITIVES/PUSH_BRANCH.md)**
   - **[Create PR](PRIMITIVES/CREATE_PR.md)**

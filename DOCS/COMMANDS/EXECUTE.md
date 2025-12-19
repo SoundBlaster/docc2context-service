@@ -81,7 +81,9 @@ docker run --rm docc2context-service pytest
    - Mark the task PRD checklist items complete.
    - Update `DOCS/INPROGRESS/next.md` status.
    - If you maintain `DOCS/Workplan.md`, mark the task `[x]`.
-2. Commit and push as appropriate for your workflow.
+2. Commit and push as appropriate for your workflow:
+   - Use **[GIT_FINALIZATION](GIT_FINALIZATION.md)** to commit, push, and create a PR
+   - Or use individual git primitives as needed
 
 ## Exceptions
 

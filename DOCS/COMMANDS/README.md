@@ -15,6 +15,7 @@ as **prompts/instructions for a coding agent** (or a human), not as executable s
 | **PROGRESS** | Optional checklist/progress updates | [PROGRESS.md](./PROGRESS.md) |
 | **ARCHIVE** | Move completed task PRDs out of the way | [ARCHIVE.md](./ARCHIVE.md) |
 | **GITWORKFLOW** | Create branch, commit, push, create PR | [GITWORKFLOW.md](./GITWORKFLOW.md) |
+| **GIT_FINALIZATION** | Commit, push, create PR (on existing branch) | [GIT_FINALIZATION.md](./GIT_FINALIZATION.md) |
 
 ## Source Of Truth
 
