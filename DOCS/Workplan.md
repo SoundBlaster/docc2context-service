@@ -49,11 +49,11 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Ensure binary can be executed from Python subprocess
 
 **Acceptance Criteria:**
-- [ ] CLI source code is accessible in the build context
-- [ ] Swift CLI binary is successfully compiled
-- [ ] Binary is installed in Docker image at a standard location
-- [ ] Binary is executable and accessible from Python subprocess
-- [ ] Binary responds to basic commands (version check, help, etc.)
+- [x] CLI source code is accessible in the build context
+- [x] Swift CLI binary is successfully compiled
+- [x] Binary is installed in Docker image at a standard location
+- [x] Binary is executable and accessible from Python subprocess
+- [x] Binary responds to basic commands (version check, help, etc.)
 
 **Estimated Time:** 4-6 hours
 
