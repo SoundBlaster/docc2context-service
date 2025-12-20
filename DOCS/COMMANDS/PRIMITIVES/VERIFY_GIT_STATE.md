@@ -39,3 +39,4 @@ Verify that the current working directory is a git repository and check its stat
 - Not in a git repository → stop and report error: "Not a git repository"
 - Git command fails → check git installation and permissions
 
+
