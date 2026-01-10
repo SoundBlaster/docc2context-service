@@ -188,11 +188,11 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Ensure cleanup happens even on errors
 
 **Acceptance Criteria:**
-- [ ] Conversion pipeline completes successfully
-- [ ] Response is streamed (not buffered entirely in RAM)
-- [ ] Output ZIP contains Markdown files
-- [ ] Error responses include CLI stderr
-- [ ] Cleanup occurs on both success and failure
+- [x] Conversion pipeline completes successfully
+- [x] Response is streamed (not buffered entirely in RAM)
+- [x] Output ZIP contains Markdown files
+- [x] Error responses include CLI stderr
+- [x] Cleanup occurs on both success and failure
 
 **Estimated Time:** 5-6 hours
 
@@ -212,9 +212,9 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Memory availability
 
 **Acceptance Criteria:**
-- [ ] Endpoint returns 200 with status JSON
-- [ ] Binary detection works correctly
-- [ ] Response matches PRD specification
+- [x] Endpoint returns 200 with status JSON
+- [x] Binary detection works correctly
+- [x] Response matches PRD specification
 
 **Estimated Time:** 1-2 hours
 

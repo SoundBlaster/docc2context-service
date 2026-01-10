@@ -34,3 +34,13 @@ This index tracks completed tasks organized by PRD Phase.
    - Status: Completed
    - Location: `1.6_SubprocessManager_Swift_CLI_Execution/`
 
+7. **Task 1.7: Conversion Pipeline & Response Streaming** (2026-01-10)
+   - Priority: Critical
+   - Status: Completed
+   - Location: `1.7_Conversion_Pipeline_Response_Streaming/`
+
+8. **Task 1.8: Health Check Endpoint** (2026-01-10)
+   - Priority: Medium
+   - Status: Completed
+   - Location: `1.8_Health_Check_Endpoint/`
+
