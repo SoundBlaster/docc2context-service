@@ -29,3 +29,8 @@ This index tracks completed tasks organized by PRD Phase.
    - Status: Completed
    - Location: `1.5_Workspace_Management_Service/`
 
+6. **Task 1.6: SubprocessManager for Swift CLI Execution** (2026-01-10)
+   - Priority: Critical
+   - Status: Completed
+   - Location: `1.6_SubprocessManager_Swift_CLI_Execution/`
+

@@ -159,11 +159,11 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Log resource usage
 
 **Acceptance Criteria:**
-- [ ] Swift CLI is executed with 60s timeout
-- [ ] Non-zero exit codes raise exceptions
-- [ ] Stderr is captured and included in error responses
-- [ ] Execution time is logged
-- [ ] Process is killed if timeout is exceeded
+- [x] Swift CLI is executed with 60s timeout
+- [x] Non-zero exit codes raise exceptions
+- [x] Stderr is captured and included in error responses
+- [x] Execution time is logged
+- [x] Process is killed if timeout is exceeded
 
 **Estimated Time:** 4-5 hours
 

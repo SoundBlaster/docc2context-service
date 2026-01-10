@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     workspace_prefix: str = "swift-conv"  # Prefix for workspace directories
     workspace_permissions: int = 0o700  # Directory permissions (octal)
     
+    # Subprocess Configuration
+    swift_cli_path: str = "docc2context"  # Path to Swift CLI binary
+    subprocess_timeout: int = 60  # Default timeout in seconds
+    max_subprocess_retries: int = 3  # Maximum retry attempts
+    
     # Logging
     log_level: str = "INFO"
     

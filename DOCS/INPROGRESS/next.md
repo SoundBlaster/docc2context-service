@@ -1,15 +1,15 @@
-# Next Task: 1.6 — SubprocessManager for Swift CLI Execution
+# Next Task: 1.7 — Conversion Pipeline & Response Streaming
 
 **Source:** Workplan.md
 **Priority:** Critical
 **Phase:** 1
-**Effort:** 4-6 hours
-**Dependencies:** Task 1.5
+**Effort:** 5-6 hours
+**Dependencies:** Task 1.6
 **Status:** Selected
 
 ## Description
 
-Create SubprocessManager class to handle Swift CLI execution with timeout, check=True to prevent hanging processes, and proper error handling for conversion operations.
+Implement conversion pipeline with ZIP extraction, Swift CLI invocation, Markdown collection, and streaming response using StreamingResponse or FileResponse to avoid loading entire ZIP in RAM.
 
 ## Next Step
 
