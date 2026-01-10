@@ -19,3 +19,13 @@ This index tracks completed tasks organized by PRD Phase.
    - Status: Completed
    - Location: `1.3_Core_FastAPI_Application_Structure/`
 
+4. **Task 1.4: File Upload & Validation Service** (2026-01-10)
+   - Priority: Critical
+   - Status: Completed
+   - Location: `1.4_File_Upload_Validation_Service/`
+
+5. **Task 1.5: Workspace Management Service** (2026-01-10)
+   - Priority: Critical
+   - Status: Completed
+   - Location: `1.5_Workspace_Management_Service/`
+

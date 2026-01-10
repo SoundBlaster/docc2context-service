@@ -103,11 +103,11 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 4. Implement path sanitization using `werkzeug.utils.secure_filename` or equivalent
 
 **Acceptance Criteria:**
-- [ ] Endpoint accepts file uploads
-- [ ] Magic number validation rejects non-ZIP files (400 error)
-- [ ] Files >100MB are rejected (413 error)
-- [ ] Zip bomb protection prevents excessive decompression
-- [ ] File paths are sanitized before use
+- [x] Endpoint accepts file uploads
+- [x] Magic number validation rejects non-ZIP files (400 error)
+- [x] Files >100MB are rejected (413 error)
+- [x] Zip bomb protection prevents excessive decompression
+- [x] File paths are sanitized before use
 
 **Estimated Time:** 6-8 hours
 
@@ -131,10 +131,10 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Can be cron job or container entrypoint script
 
 **Acceptance Criteria:**
-- [ ] Unique workspace directories are created per request
-- [ ] Workspaces are deleted after request completion
-- [ ] Startup script cleans orphaned directories
-- [ ] Directory permissions are secure (700 or similar)
+- [x] Unique workspace directories are created per request
+- [x] Workspaces are deleted after request completion
+- [x] Startup script cleans orphaned directories
+- [x] Directory permissions are secure (700 or similar)
 
 **Estimated Time:** 3-4 hours
 

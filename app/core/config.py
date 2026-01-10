@@ -11,6 +11,15 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     
+    # File Upload Configuration
+    max_upload_size_mb: int = 100  # Maximum upload size in MB
+    max_decompressed_size_mb: int = 500  # Maximum decompressed size in MB
+    
+    # Workspace Configuration
+    workspace_base_path: str = "/tmp"  # Base path for workspaces
+    workspace_prefix: str = "swift-conv"  # Prefix for workspace directories
+    workspace_permissions: int = 0o700  # Directory permissions (octal)
+    
     # Logging
     log_level: str = "INFO"
     

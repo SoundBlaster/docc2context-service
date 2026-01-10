@@ -29,7 +29,9 @@ class RequestIDFilter(logging.Filter):
     """Logging filter to add request ID to log records"""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        record.request_id = get_request_id()
+        # Only add request_id if it doesn't already exist
+        if not hasattr(record, 'request_id'):
+            record.request_id = get_request_id()
         return True
 
 
