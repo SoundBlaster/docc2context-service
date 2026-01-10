@@ -40,3 +40,6 @@ Verify that the current working directory is a git repository and check its stat
 - Git command fails → check git installation and permissions
 
 
+
+
+

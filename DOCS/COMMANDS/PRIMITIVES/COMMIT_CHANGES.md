@@ -47,3 +47,6 @@ Stage modified files and commit them with a clear, descriptive commit message.
 - Git hooks fail (if configured) → address hook failures before proceeding
 
 
+
+
+
