@@ -1,52 +1,25 @@
 """FastAPI application entry point"""
 
-import uuid
-from contextvars import copy_context
-from typing import Callable
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.core.config import settings
-from app.core.logging import get_logger, set_request_id, setup_logging
-from app.api.v1 import router as v1_router
+from app.core.logging import setup_logging, get_logger
+from app.api.v1.endpoints import router as endpoints_router
 
 # Setup logging
-setup_logging(settings.log_level)
-logger = get_logger(__name__)
+setup_logging()
 
 # Create FastAPI app
 app = FastAPI(
     title=settings.app_name,
     description=settings.app_description,
-    version=settings.app_version,
+    version=settings.app_version
 )
 
-
-class RequestIDMiddleware(BaseHTTPMiddleware):
-    """Middleware to generate and set request ID for each request"""
-
-    async def dispatch(self, request: Request, call_next: Callable):
-        # Generate request ID
-        request_id = set_request_id()
-        
-        # Add request ID to request state for access in routes
-        request.state.request_id = request_id
-        
-        # Process request
-        response = await call_next(request)
-        
-        # Add request ID to response headers
-        response.headers["X-Request-ID"] = request_id
-        
-        return response
-
-
-# Add request ID middleware
-app.add_middleware(RequestIDMiddleware)
-
-# Configure CORS
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -55,29 +28,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routers
-app.include_router(v1_router)
+# Include API routes
+app.include_router(endpoints_router, prefix="/api/v1")
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="app/static"))
+
+# Root endpoint to serve frontend
+@app.get("/")
+async def root():
+    """Serve the frontend application"""
+    return FileResponse("app/static/index.html")
 
 @app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    # TODO: Add binary detection in Task 1.8
+async def health():
+    """Basic health check endpoint"""
     return {
-        "status": "ready",
-        "binary_detected": True  # Placeholder
+        "status": "healthy",
+        "message": "DocC2Context Service is running"
     }
 
 
 @app.on_event("startup")
 async def startup_event():
     """Application startup event"""
+    setup_logging()
+    logger = get_logger(__name__)
     logger.info("Application starting up", extra={"app_version": settings.app_version})
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Application shutdown event"""
+    logger = get_logger(__name__)
     logger.info("Application shutting down")
 
 
@@ -89,8 +72,3 @@ if __name__ == "__main__":
         port=settings.api_port,
         reload=True
     )
-
-
-
-
-

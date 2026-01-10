@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag-and-Drop Test</title>
+    <style>
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background-color: #f9fafb;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: scale(1.02);
+        }
+
+        .drop-zone.has-file {
+            border-color: #10b981;
+            background-color: #d1fae5;
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #6b7280;
+        }
+
+        .drop-zone-text {
+            font-size: 1.2rem;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .file-input-label:hover {
+            background-color: #2563eb;
+        }
+
+        .file-info {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .file-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .file-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .file-size {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .upload-button {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .upload-button:hover:not(:disabled) {
+            background-color: #059669;
+        }
+
+        .upload-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .status-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drag-and-Drop Test</h1>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-text">Drag and drop your DocC archive here</div>
+            <div class="drop-zone-text">or</div>
+            <input type="file" id="fileInput" class="file-input" accept=".zip,.doccarchive" multiple>
+            <label for="fileInput" class="file-input-label">Choose File</label>
+        </div>
+
+        <div class="file-info" id="fileInfo" style="display: none;">
+            <div class="file-info-item">
+                <span class="file-name" id="fileName"></span>
+                <span class="file-size" id="fileSize"></span>
+            </div>
+        </div>
+
+        <button class="upload-button" id="uploadButton" disabled>
+            Convert to Markdown
+        </button>
+
+        <div class="status-message" id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        class FileUploader {
+            constructor() {
+                this.dropZone = document.getElementById('dropZone');
+                this.fileInput = document.getElementById('fileInput');
+                this.uploadButton = document.getElementById('uploadButton');
+                this.fileInfo = document.getElementById('fileInfo');
+                this.fileName = document.getElementById('fileName');
+                this.fileSize = document.getElementById('fileSize');
+                this.statusMessage = document.getElementById('statusMessage');
+
+                this.selectedFile = null;
+                this.isUploading = false;
+
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Drag and drop events
+                this.dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+                this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
+                this.dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+
+                // File input events
+                this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+
+                // Upload button events
+                this.uploadButton.addEventListener('click', this.handleUploadClick.bind(this));
+
+                // Prevent default drag behavior on page
+                document.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                document.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                });
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dropZone.classList.add('drag-over');
+                this.showStatus('Drop your file here', 'info');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dropZone.classList.remove('drag-over');
+                this.hideStatus();
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dropZone.classList.remove('drag-over');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.selectFile(files[0]);
+                }
+            }
+
+            handleFileSelect(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    this.selectFile(files[0]);
+                }
+            }
+
+            selectFile(file) {
+                // Validate file type
+                if (!this.isValidFileType(file)) {
+                    this.showStatus('Please select a valid DocC archive (.zip or .doccarchive)', 'error');
+                    return;
+                }
+
+                // Validate file size (100MB limit)
+                const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+                if (file.size > maxSize) {
+                    this.showStatus(`File size (${this.formatFileSize(file.size)}) exceeds 100MB limit`, 'error');
+                    return;
+                }
+
+                this.selectedFile = file;
+                this.updateFileInfo();
+                this.uploadButton.disabled = false;
+                this.dropZone.classList.add('has-file');
+
+                this.showStatus(`Selected: ${file.name}`, 'info');
+            }
+
+            isValidFileType(file) {
+                const validTypes = ['.zip', '.doccarchive'];
+                const fileName = file.name.toLowerCase();
+                return validTypes.some(type => fileName.endsWith(type));
+            }
+
+            updateFileInfo() {
+                if (this.selectedFile) {
+                    this.fileName.textContent = this.selectedFile.name;
+                    this.fileSize.textContent = this.formatFileSize(this.selectedFile.size);
+                    this.fileInfo.style.display = 'block';
+                } else {
+                    this.fileInfo.style.display = 'none';
+                }
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+                return formattedSize + ' ' + sizes[i];
+            }
+
+            async handleUploadClick() {
+                if (!this.selectedFile || this.isUploading) {
+                    return;
+                }
+
+                this.isUploading = true;
+                this.uploadButton.disabled = true;
+                this.uploadButton.textContent = 'Converting...';
+                this.hideStatus();
+
+                try {
+                    // Simulate upload for testing
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    this.showStatus('Conversion completed! Download should start automatically.', 'success');
+                } catch (error) {
+                    this.showStatus(`Conversion failed: ${error.message}`, 'error');
+                } finally {
+                    this.isUploading = false;
+                    this.uploadButton.disabled = false;
+                    this.uploadButton.textContent = 'Convert to Markdown';
+                }
+            }
+
+            showStatus(message, type = 'info') {
+                this.statusMessage.textContent = message;
+                this.statusMessage.style.display = 'block';
+                this.statusMessage.className = `status-message status-${type}`;
+            }
+
+            hideStatus() {
+                this.statusMessage.style.display = 'none';
+                this.statusMessage.className = 'status-message';
+            }
+        }
+
+        // Initialize the uploader when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new FileUploader();
+            console.log('FileUploader initialized successfully');
+        });
+    </script>
+</body>
+</html>

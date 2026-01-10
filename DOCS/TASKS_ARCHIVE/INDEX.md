@@ -44,3 +44,12 @@ This index tracks completed tasks organized by PRD Phase.
    - Status: Completed
    - Location: `1.8_Health_Check_Endpoint/`
 
+---
+
+## Phase 2: The "Portal" (Frontend)
+
+### Task 2.1: Frontend Project Setup
+- Priority: High
+- Status: Completed
+- Location: `2.1_Frontend_Project_Setup/`
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocC2Context Service</title>
+    <meta name="description" content="Convert Swift DocC archives to Markdown">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DocC2Context Service</h1>
+            <p>Convert Swift DocC archives to Markdown</p>
+        </header>
+        
+        <main>
+            <section class="upload-section">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-icon">📁</div>
+                    <div class="drop-zone-text">Drag and drop your DocC archive here</div>
+                    <div class="drop-zone-text">or</div>
+                    <input type="file" id="fileInput" class="file-input" accept=".zip,.doccarchive" multiple>
+                    <label for="fileInput" class="file-input-label">Choose File</label>
+                </div>
+                
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <div class="file-info-item">
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                    </div>
+                </div>
+                
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                
+                <button class="upload-button" id="uploadButton" disabled>
+                    Convert to Markdown
+                </button>
+                
+                <div class="status-message" id="statusMessage" style="display: none;"></div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2026 DocC2Context Service</p>
+        </footer>
+    </div>
+    
+    <script src="/static/js/upload.js"></script>
+</body>
+</html>
