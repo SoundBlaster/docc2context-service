@@ -21,8 +21,9 @@ ZIP_MAGIC_NUMBERS = [
     b'PK\x07\x08',  # Spanned archive
 ]
 
-# Safe filename characters (alphanumeric, dash, underscore, period)
-SAFE_FILENAME_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.")
+# Safe filename characters (alphanumeric, dash, underscore, period, and common DocC characters)
+# DocC archives can contain Swift function signatures and special characters
+SAFE_FILENAME_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.():![]&<>@#$%^+=,;")
 MAX_FILENAME_LENGTH = 255
 
 
@@ -92,8 +93,27 @@ def sanitize_filename(filename: str) -> str:
         raise FileValidationError(f"Filename contains unsafe characters: {list(unsafe_chars)}")
     
     # Prevent hidden files (starting with dot)
+    # Allow legitimate extensions like .doccarchive.zip
+    # Also allow macOS resource fork files (._filename)
     if filename.startswith('.'):
-        raise FileValidationError("Hidden filenames not allowed")
+        # Check if it's a hidden file (starts with dot)
+        # We want to reject hidden files but allow legitimate extensions
+        # A file is considered hidden if:
+        # 1. It starts with a dot and has no other dots (like .gitignore)
+        # 2. It starts with multiple dots (like ..hiddenfile)
+        # 3. It starts with a dot followed by another dot (like .hidden.ext)
+        # Exception: Allow macOS resource fork files (._filename)
+        parts = filename.split('.')
+
+        # Check if this is a macOS resource fork file (starts with ._ and has extension)
+        if len(parts) >= 3 and parts[0] == '' and parts[1].startswith('_'):
+            # This is a macOS resource fork file like ._SpecificationCore.doccarchive
+            # Allow it if it has a legitimate extension
+            return filename
+
+        if (len(parts) > 1 and parts[0] == '' and parts[1] != '') or filename.startswith('..'):
+            # This is a hidden file like .gitignore, .bashrc, .hidden.ext
+            raise FileValidationError("Hidden filenames not allowed")
     
     return filename
 
@@ -107,7 +127,7 @@ def validate_zip_bomb_protection(zip_file: zipfile.ZipFile, original_size: int) 
     )
     
     file_count = 0
-    max_files = 1000  # Prevent file count bombs
+    max_files = 5000  # Increased limit for DocC archives which can have many files
     
     for file_info in zip_file.infolist():
         file_count += 1
