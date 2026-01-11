@@ -24,7 +24,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Swift
-      uses: swift-actions/setup-swift@v5
+      uses: swift-actions/setup-swift@v6.2
       with:
         swift-version: "5.9"
 
