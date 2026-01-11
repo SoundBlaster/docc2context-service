@@ -47,7 +47,7 @@ jobs:
 
     - name: Run validation script
       run: |
-        python scripts/validate.py --json | tail -n 1 > validation_results.json
+        python scripts/validate.py --json > validation_results.json
         cat validation_results.json
 
     - name: Check validation results
