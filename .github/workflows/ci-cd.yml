@@ -1,0 +1,139 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Project Validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Swift
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y swift
+
+    - name: Build docc2context CLI
+      run: |
+        git clone https://github.com/SoundBlaster/docc2context.git
+        cd docc2context
+        swift build -c release
+        cp .build/release/docc2context /usr/local/bin/docc2context
+        chmod +x /usr/local/bin/docc2context
+
+    - name: Verify docc2context installation
+      run: |
+        docc2context --help
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run validation script
+      run: |
+        python scripts/validate.py --json > validation_results.json
+        cat validation_results.json
+
+    - name: Check validation results
+      run: |
+        python -c "
+        import json
+        import sys
+        try:
+            with open('validation_results.json') as f:
+                results = json.load(f)
+        except Exception as e:
+            print(f'Failed to load validation_results.json: {e}')
+            sys.exit(1)
+
+        if results.get('failed', 0) > 0:
+            print(f\"Validation failed with {results['failed']} errors\")
+            sys.exit(1)
+        elif results.get('warnings', 0) > 0:
+            print(f\"Validation completed with {results['warnings']} warnings\")
+        else:
+            print('Validation completed successfully')
+        "
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run tests
+      run: |
+        pytest -v --tb=short
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t docc2context-service .
+
+    - name: Push Docker image
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker tag docc2context-service ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Deploy to production server
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment commands here
+        # Example: ssh user@server "docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest && docker-compose up -d"
