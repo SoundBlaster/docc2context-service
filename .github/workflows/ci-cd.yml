@@ -38,7 +38,7 @@ jobs:
 
     - name: Verify docc2context installation
       run: |
-        docc2context --version
+        docc2context --help
 
     - name: Install dependencies
       run: |
