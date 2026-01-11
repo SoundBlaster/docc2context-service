@@ -266,10 +266,10 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
    - Display file size
 
 **Acceptance Criteria:**
-- [ ] Users can drag files onto the drop zone
-- [ ] Users can click to select files
-- [ ] Visual feedback is clear and responsive
-- [ ] File name and size are displayed
+- [x] Users can drag files onto the drop zone
+- [x] Users can click to select files
+- [x] Visual feedback is clear and responsive
+- [x] File name and size are displayed
 
 **Estimated Time:** 4-5 hours
 
