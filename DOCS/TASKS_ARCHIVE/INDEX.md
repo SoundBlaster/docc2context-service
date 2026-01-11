@@ -53,3 +53,8 @@ This index tracks completed tasks organized by PRD Phase.
 - Status: Completed
 - Location: `2.1_Frontend_Project_Setup/`
 
+### Task 2.2: Drag-and-Drop Upload Zone
+- Priority: High
+- Status: Completed
+- Location: `2.2_Drag_and_Drop_Upload_Zone/`
+
