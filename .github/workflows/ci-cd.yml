@@ -41,10 +41,10 @@ jobs:
         with open('validation_results.json') as f:
             results = json.load(f)
         if results['failed'] > 0:
-            print(f'Validation failed with {results['failed']} errors')
+            print(f\"Validation failed with {results['failed']} errors\")
             sys.exit(1)
         elif results['warnings'] > 0:
-            print(f'Validation completed with {results['warnings']} warnings')
+            print(f\"Validation completed with {results['warnings']} warnings\")
         else:
             print('Validation completed successfully')
         "
