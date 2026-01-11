@@ -157,6 +157,35 @@ MAX_FILE_SIZE=104857600  # 100MB
 - **API Documentation**: Available at `/docs` when the service is running
 - **Project Documentation**: See the `DOCS/` directory
 - **Work Plan**: `DOCS/Workplan.md`
+- **CI/CD Pipeline**: `.github/workflows/ci-cd.yml`
+
+## CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline using GitHub Actions:
+
+### Pipeline Stages
+
+1. **Validation**: Runs project validation script to check structure and configuration
+2. **Testing**: Executes automated tests using pytest
+3. **Build**: Creates Docker image and pushes to Docker Hub
+4. **Deploy**: Deploys to production environment
+
+### Requirements
+
+To use the CI/CD pipeline, configure these GitHub secrets:
+- `DOCKER_HUB_USERNAME`: Your Docker Hub username
+- `DOCKER_HUB_TOKEN`: Your Docker Hub access token
+
+### Usage
+
+The pipeline runs automatically on:
+- Pushes to the `main` branch
+- Pull requests targeting the `main` branch
+
+For manual execution:
+1. Go to GitHub Actions tab
+2. Select "CI/CD Pipeline"
+3. Click "Run workflow"
 
 ## Contributing
 

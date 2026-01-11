@@ -1,0 +1,131 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Project Validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run validation script
+      run: |
+        python scripts/validate.py --json > validation_results.json
+        cat validation_results.json
+
+    - name: Check validation results
+      run: |
+        python -c "
+        import json
+        import sys
+        with open('validation_results.json') as f:
+            results = json.load(f)
+        if results['failed'] > 0:
+            print(f'Validation failed with {results[\"failed\"]} errors')
+            sys.exit(1)
+        elif results['warnings'] > 0:
+            print(f'Validation completed with {results[\"warnings\"]} warnings')
+        else:
+            print('Validation completed successfully')
+        "
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run tests
+      run: |
+        pytest -v --tb=short
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t docc2context-service .
+
+    - name: Push Docker image
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker tag docc2context-service ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Deploy to production server
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment commands here
+        # Example: ssh user@server "docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest && docker-compose up -d"
+```
+The GitHub Actions workflow file has been created. This workflow includes four jobs:
+
+1. **validate**: Runs the project validation script to ensure everything is properly configured
+2. **test**: Runs pytest to execute any tests in the project
+3. **build**: Builds the Docker image and pushes it to Docker Hub (only on main branch)
+4. **deploy**: Deploys the application to production (only on main branch)
+
+The workflow is triggered on pushes and pull requests to the main branch. You'll need to set up the following secrets in your GitHub repository settings:
+
+- `DOCKER_HUB_USERNAME`: Your Docker Hub username
+- `DOCKER_HUB_TOKEN`: Your Docker Hub access token
+
+You can customize the deployment step with your actual deployment commands.
