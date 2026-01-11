@@ -60,6 +60,9 @@ COPY --from=swift-builder /build/docc2context/.build/release/docc2context /usr/l
 # Ensure the binary has execute permissions
 RUN chmod +x /usr/local/bin/docc2context
 
+# Create non-root user for running the application
+RUN groupadd -r appuser && useradd -r -g appuser -u 1000 appuser
+
 # Set working directory
 WORKDIR /app
 
@@ -67,11 +70,27 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code (will be added in later tasks)
+# Copy application code
 COPY . .
+
+# Create directories with proper permissions
+RUN mkdir -p /tmp/workspaces && \
+    chown -R appuser:appuser /app /tmp/workspaces
+
+# Switch to non-root user
+USER appuser
 
 # Expose FastAPI port
 EXPOSE 8000
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Security: Set resource limits and security options
+# These will be enforced by Docker runtime
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # Default command (will be overridden in docker-compose or when running)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

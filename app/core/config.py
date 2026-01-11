@@ -13,16 +13,20 @@ class Settings(BaseSettings):
     # File Upload Configuration
     max_upload_size_mb: int = 100  # Maximum upload size in MB
     max_decompressed_size_mb: int = 500  # Maximum decompressed size in MB
+    max_zip_files: int = 5000  # Maximum files in a ZIP archive
+    max_zip_depth: int = 10  # Maximum directory depth in ZIP
 
     # Workspace Configuration
     workspace_base_path: str = "/tmp"  # Base path for workspaces
     workspace_prefix: str = "swift-conv"  # Prefix for workspace directories
     workspace_permissions: int = 0o700  # Directory permissions (octal)
+    workspace_max_age_seconds: int = 3600  # Maximum age for workspace cleanup (1 hour)
 
     # Subprocess Configuration
     swift_cli_path: str = "docc2context"  # Path to Swift CLI binary
     subprocess_timeout: int = 60  # Default timeout in seconds
     max_subprocess_retries: int = 3  # Maximum retry attempts
+    subprocess_memory_limit_mb: int = 1024  # Memory limit for subprocess (1GB)
 
     # Logging
     log_level: str = "INFO"

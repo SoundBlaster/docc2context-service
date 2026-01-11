@@ -71,12 +71,36 @@ def validate_zip_magic_number(file_content: bytes) -> None:
 
 
 def sanitize_filename(filename: str) -> str:
-    """Sanitize filename to prevent path traversal attacks"""
+    """Sanitize filename to prevent path traversal and other attacks"""
     if not filename:
         raise FileValidationError("Empty filename provided")
 
-    # Remove path components
+    # Check for null bytes (path traversal variant)
+    if "\x00" in filename:
+        logger.error(
+            "Null byte detected in filename",
+            extra={"original_filename": repr(filename)},
+        )
+        raise FileValidationError("Filename contains null byte")
+
+    # Check for control characters
+    if any(ord(c) < 32 and c not in "\t\n\r" for c in filename):
+        logger.warning(
+            "Control characters detected in filename",
+            extra={"original_filename": repr(filename)},
+        )
+        raise FileValidationError("Filename contains control characters")
+
+    # Remove path components (handles both / and \)
     filename = os.path.basename(filename)
+    
+    # Additional check: ensure no path separators remain
+    if "/" in filename or "\\" in filename:
+        logger.error(
+            "Path separator in filename after basename",
+            extra={"original_filename": filename},
+        )
+        raise FileValidationError("Filename contains path separators")
 
     # Check filename length
     if len(filename) > MAX_FILENAME_LENGTH:
@@ -142,7 +166,29 @@ def validate_zip_bomb_protection(zip_file: zipfile.ZipFile, original_size: int) 
             )
 
         # Check for path traversal in file names
-        filename = sanitize_filename(file_info.filename)
+        # Don't use sanitize_filename here as it strips paths
+        # Instead, validate the path doesn't escape
+        if file_info.filename.startswith("/") or file_info.filename.startswith("\\"):
+            logger.error(
+                "Absolute path detected in ZIP",
+                extra={"zip_filename": file_info.filename},
+            )
+            raise FileValidationError(f"Absolute paths not allowed in ZIP: {file_info.filename}")
+
+        if ".." in file_info.filename:
+            logger.error(
+                "Path traversal detected in ZIP",
+                extra={"zip_filename": file_info.filename},
+            )
+            raise FileValidationError(f"Path traversal detected in ZIP: {file_info.filename}")
+
+        # Check for null bytes in filename
+        if "\x00" in file_info.filename:
+            logger.error(
+                "Null byte detected in ZIP filename",
+                extra={"zip_filename": repr(file_info.filename)},
+            )
+            raise FileValidationError("Null byte detected in ZIP filename")
 
         # Check file size
         file_size = file_info.file_size
@@ -167,9 +213,18 @@ def validate_zip_bomb_protection(zip_file: zipfile.ZipFile, original_size: int) 
         if file_info.flag_bits & 0x1:  # Bit 0 indicates encryption
             logger.warning(
                 "Encrypted file detected in ZIP",
-                extra={"zip_filename": filename, "encrypted": True},
+                extra={"zip_filename": file_info.filename, "encrypted": True},
             )
             raise FileValidationError("Encrypted files are not supported")
+
+        # Check for symlinks in ZIP metadata
+        # Symlink flag is 0xA000 in the upper 16 bits of external_attr (Unix)
+        if (file_info.external_attr >> 16) == 0xA000:
+            logger.warning(
+                "Symlink detected in ZIP metadata",
+                extra={"zip_filename": file_info.filename},
+            )
+            raise FileValidationError(f"Symlinks not allowed in ZIP: {file_info.filename}")
 
     logger.info(
         "ZIP bomb protection validation passed",

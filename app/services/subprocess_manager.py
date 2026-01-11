@@ -54,12 +54,26 @@ class SubprocessManager:
 
         Raises:
             asyncio.TimeoutError: If command times out
+            ValueError: If command is unsafe
             Exception: For other execution errors
         """
         if timeout is None:
             timeout = self.default_timeout
         if retries is None:
             retries = self.max_retries
+
+        # Validate command safety before execution
+        if not self.validate_command_safety(command):
+            logger.error(
+                "Unsafe command blocked",
+                extra={"command": " ".join(command)},
+            )
+            raise ValueError(f"Command not allowed for security reasons: {command[0]}")
+
+        # Sanitize environment variables to prevent injection
+        safe_env = None
+        if env:
+            safe_env = self._sanitize_environment(env)
 
         logger.info(
             "Executing command",
@@ -75,13 +89,13 @@ class SubprocessManager:
 
         for attempt in range(retries + 1):
             try:
-                # Execute the command
+                # Execute the command with shell=False to prevent command injection
                 process = await asyncio.create_subprocess_exec(
                     *command,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     cwd=cwd,
-                    env=env,
+                    env=safe_env,
                 )
 
                 # Wait for completion with timeout
@@ -251,6 +265,53 @@ class SubprocessManager:
 
         return result
 
+    def _sanitize_environment(self, env: dict[str, str]) -> dict[str, str]:
+        """
+        Sanitize environment variables to prevent injection attacks
+
+        Args:
+            env: Environment variables to sanitize
+
+        Returns:
+            dict: Sanitized environment variables
+        """
+        safe_env = {}
+        
+        # Whitelist of safe environment variables
+        safe_keys = {
+            "PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ",
+            "TMPDIR", "TEMP", "TMP"
+        }
+        
+        for key, value in env.items():
+            # Only allow whitelisted keys
+            if key not in safe_keys:
+                logger.warning(
+                    "Environment variable filtered",
+                    extra={"key": key, "reason": "not in whitelist"},
+                )
+                continue
+            
+            # Check for null bytes
+            if "\x00" in key or "\x00" in value:
+                logger.warning(
+                    "Environment variable contains null byte",
+                    extra={"key": key},
+                )
+                continue
+            
+            # Limit value length to prevent memory exhaustion
+            if len(value) > 4096:
+                logger.warning(
+                    "Environment variable value too long",
+                    extra={"key": key, "length": len(value)},
+                )
+                continue
+            
+            safe_env[key] = value
+        
+        return safe_env
+
     def validate_command_safety(self, command: list[str]) -> bool:
         """
         Validate that a command is safe to execute
@@ -261,34 +322,67 @@ class SubprocessManager:
         Returns:
             bool: True if command is safe
         """
-        # Only allow specific commands for security
-        allowed_commands = {self.swift_cli_path: ["--version", "--help"]}
-
         if not command:
             return False
 
+        # Validate each argument
+        for arg in command:
+            # Check for null bytes
+            if "\x00" in arg:
+                logger.warning(
+                    "Null byte detected in command argument",
+                    extra={"command": command, "arg": repr(arg)},
+                )
+                return False
+            
+            # Check argument length to prevent DoS
+            if len(arg) > 4096:
+                logger.warning(
+                    "Command argument too long",
+                    extra={"command": command, "arg_length": len(arg)},
+                )
+                return False
+
         base_command = command[0]
 
-        # Check if base command is allowed
-        if base_command not in allowed_commands:
+        # Only allow the Swift CLI binary
+        if base_command != self.swift_cli_path:
             logger.warning(
                 "Command not allowed for security",
                 extra={
                     "base_command": base_command,
-                    "allowed_commands": list(allowed_commands.keys()),
+                    "allowed_command": self.swift_cli_path,
                 },
             )
             return False
 
-        # For Swift CLI, allow additional arguments for conversion
-        if base_command == self.swift_cli_path:
-            # Allow: docc2context input.zip output.md
-            if len(command) == 3 and not command[1].startswith("-"):
-                return True
-            # Allow: docc2context --version or --help
-            if len(command) == 2 and command[1] in allowed_commands[base_command]:
-                return True
+        # For Swift CLI, allow specific patterns
+        # Pattern 1: docc2context input.zip output.md (conversion)
+        if len(command) == 3:
+            # Validate input and output paths don't contain dangerous characters
+            input_path = command[1]
+            output_path = command[2]
+            
+            # Check for command injection attempts
+            dangerous_chars = [";", "&", "|", "`", "$", "(", ")", "<", ">", "\n", "\r"]
+            for path in [input_path, output_path]:
+                if any(char in path for char in dangerous_chars):
+                    logger.warning(
+                        "Dangerous characters detected in path",
+                        extra={"path": path, "dangerous_chars": dangerous_chars},
+                    )
+                    return False
+            
+            return True
+        
+        # Pattern 2: docc2context --version or --help (info commands)
+        if len(command) == 2 and command[1] in ["--version", "--help"]:
+            return True
 
+        logger.warning(
+            "Command pattern not recognized",
+            extra={"command": command},
+        )
         return False
 
 
