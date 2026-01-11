@@ -100,7 +100,7 @@ python scripts/validate.py -v -o /tmp/validation.log
 
 ### Validation Script
 
-The project includes a comprehensive validation script:
+The project includes a comprehensive validation script with multiple output formats:
 
 ```bash
 # Run validation (minimal output)
@@ -114,7 +114,36 @@ python scripts/validate.py -v -o /tmp/validation.log
 
 # Get JSON output for programmatic use
 python scripts/validate.py --json
+
+# Get pretty-printed JSON output
+python scripts/validate.py --json --pretty-json
+
+# Get concise summary by category
+python scripts/validate.py --short-summary | grep -A 20 "DOC2CONTEXT SERVICE VALIDATION SUMMARY"
+
+# Get detailed summary of all checks
+python scripts/validate.py --summary | grep -A 100 "DOC2CONTEXT SERVICE VALIDATION RESULTS"
 ```
+
+#### Validation Output Options:
+
+- **Default**: Minimal output showing only critical issues
+- **Verbose (`-v`)**: Detailed output with individual validation checks
+- **JSON (`--json`)**: Compact JSON format for programmatic use
+- **Pretty JSON (`--json --pretty-json`)**: Formatted JSON for human readability
+- **Short Summary (`--short-summary`)**: Concise summary by category
+- **Full Summary (`--summary`)**: Detailed summary of all validation checks
+
+#### Validation Categories:
+
+The validation script checks the following aspects of the project:
+- Python environment and dependencies
+- Project structure and required files
+- FastAPI application configuration
+- API endpoints functionality
+- Docker setup and configuration
+- Configuration files
+- Test files and coverage
 
 ## Development
 

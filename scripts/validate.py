@@ -373,7 +373,67 @@ class ProjectValidator:
         """Print validation results in a readable format."""
         results_to_print = results or self.results
 
-        if self.verbose and not self.args.json:
+        # Show summary format if --summary flag is used or if verbose and not json
+        show_summary = self.args.summary or (self.verbose and not self.args.json)
+        show_short_summary = self.args.short_summary
+
+        if show_short_summary:
+            # Short summary by category
+            categories = {
+                'Python Environment': 0,
+                'Project Structure': 0,
+                'FastAPI Application': 0,
+                'API Endpoints': 0,
+                'Docker Setup': 0,
+                'Configuration': 0,
+                'Test Files': 0
+            }
+
+            # Count checks by category
+            for detail in results_to_print['details']:
+                if detail['check'].startswith('Python'):
+                    categories['Python Environment'] += 1
+                elif detail['check'].startswith('Directory') or detail['check'].startswith('File app/'):
+                    categories['Project Structure'] += 1
+                elif detail['check'].startswith('FastAPI'):
+                    categories['FastAPI Application'] += 1
+                elif detail['check'].startswith('Health') or detail['check'].startswith('Convert'):
+                    categories['API Endpoints'] += 1
+                elif detail['check'].startswith('Docker'):
+                    categories['Docker Setup'] += 1
+                elif detail['check'].startswith('Config') or detail['check'].startswith('Requirements'):
+                    categories['Configuration'] += 1
+                elif detail['check'].startswith('Test'):
+                    categories['Test Files'] += 1
+
+            print("\n" + "="*50)
+            print("DOC2CONTEXT SERVICE VALIDATION SUMMARY")
+            print("="*50)
+
+            for category, count in categories.items():
+                if count > 0:
+                    # Check if all tests in this category passed
+                    category_passed = True
+                    for detail in results_to_print['details']:
+                        if (category == 'Python Environment' and detail['check'].startswith('Python')) or \
+                           (category == 'Project Structure' and (detail['check'].startswith('Directory') or detail['check'].startswith('File app/'))) or \
+                           (category == 'FastAPI Application' and detail['check'].startswith('FastAPI')) or \
+                           (category == 'API Endpoints' and (detail['check'].startswith('Health') or detail['check'].startswith('Convert'))) or \
+                           (category == 'Docker Setup' and detail['check'].startswith('Docker')) or \
+                           (category == 'Configuration' and (detail['check'].startswith('Config') or detail['check'].startswith('Requirements'))) or \
+                           (category == 'Test Files' and detail['check'].startswith('Test')):
+                            if not detail['passed']:
+                                category_passed = False
+                                break
+
+                    status = "✓ PASS" if category_passed else "✗ FAIL"
+                    print(f"{status}: {category} ({count} checks)")
+
+            print("\n" + "="*50)
+            print(f"Overall: {results_to_print['passed']} passed, {results_to_print['failed']} failed, {results_to_print['warnings']} warnings")
+            print("="*50)
+
+        elif show_summary:
             print("\n" + "="*50)
             print("DOC2CONTEXT SERVICE VALIDATION RESULTS")
             print("="*50)
@@ -400,6 +460,10 @@ def main():
     parser.add_argument('--output-file', '-o', help="Output file for verbose logging")
     parser.add_argument('--project-root', '-p', default=os.getcwd(), help="Project root directory")
     parser.add_argument('--json', '-j', action='store_true', help="Output results as JSON")
+    parser.add_argument('--pretty-json', action='store_true', help="Output pretty-printed JSON")
+    parser.add_argument('--summary', '-s', action='store_true', help="Show summary output format")
+    parser.add_argument('--short-summary', action='store_true', help="Show concise summary by category")
+    parser.add_argument('--quiet', '-q', action='store_true', help="Suppress all output except results")
 
     args = parser.parse_args()
 
@@ -413,8 +477,14 @@ def main():
         validator.verbose_file.close()
 
     if args.json:
-        print(json.dumps(results, indent=2))
+        if args.pretty_json:
+            print(json.dumps(results, indent=4))
+        else:
+            print(json.dumps(results, indent=2))
     else:
+        # If --summary flag is used, show summary format even without --verbose
+        if args.summary or args.short_summary:
+            validator.set_verbose(True, None)  # Enable verbose temporarily for summary
         validator.print_results(results)
 
     # Return appropriate exit code
