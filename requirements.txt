@@ -6,8 +6,3 @@ python-json-logger>=2.0.0
 requests>=2.32.5
 pytest>=8.0.0
 httpx>=0.27.0
-```
-
-The `requirements.txt` file has been updated to include `pytest` and `httpx`, which are required for running the validation script and tests. This should resolve the dependency issues in the GitHub Actions workflow.
-
-You can now commit this change and push it to your repository. The workflow should trigger and run successfully. If it still fails, you may need to check the GitHub Actions logs for more detailed error messages.
