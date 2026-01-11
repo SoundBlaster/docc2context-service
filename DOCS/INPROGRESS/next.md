@@ -1,19 +1,16 @@
-# Next Task: None
+# Next Task: 3.2 — Unit & Integration Tests
 
-**Source:** None
-**Priority:** None
-**Phase:** None
-**Effort:** None
-**Dependencies:** None
-**Status:** None
+**Source:** PRD §5
+**Priority:** High
+**Phase:** 3
+**Effort:** 8-10 hours
+**Dependencies:** Task 1.7, Task 2.4
+**Status:** Selected
 
 ## Description
 
-No task currently selected.
+Set up testing framework, write test cases for backend and frontend, and ensure test coverage >80% for critical paths.
 
 ## Next Step
 
-Run SELECT to choose the next task.
-```
-
-Now, I will run the validation script again to ensure that the implementation is correct and all checks pass:{"command": "python scripts/validate.py -v", "cd": "/Users/egor/Development/GitHub/docc2context-service"}
+Run PLAN to generate an implementation-ready task PRD for this item.

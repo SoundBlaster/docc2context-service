@@ -68,3 +68,12 @@ This index tracks completed tasks organized by PRD Phase.
 - Status: Completed
 - Location: `2.4_Error_Handling_UI/`
 
+---
+
+## Phase 3: Hardening & Testing
+
+### Task 3.1: Security Hardening (2026-01-11)
+- Priority: High
+- Status: Completed
+- Location: `3.1_Security_Hardening/`
+

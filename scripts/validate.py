@@ -212,6 +212,17 @@ class ProjectValidator:
 
             client = TestClient(app)
 
+            # Initialize FastAPILimiter for testing
+            try:
+                from fastapi_limiter import FastAPILimiter
+                import asyncio
+                from redis.asyncio import Redis
+                redis = Redis(host="localhost", port=6379)
+                asyncio.run(FastAPILimiter.init(redis))
+            except Exception as e:
+                # Skip rate limiter initialization if Redis is not available
+                pass
+
             # Test health endpoint
             response = client.get('/api/v1/health')
             if response.status_code == 200:
