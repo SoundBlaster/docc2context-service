@@ -2,6 +2,22 @@
 
 Web service for converting Swift DocC archives to Markdown format.
 
+## ⚠️ Security Notice
+
+This service processes **untrusted file uploads** and should be deployed with appropriate security measures. See:
+- **[SECURITY_AUDIT.md](SECURITY_AUDIT.md)** - Comprehensive security audit and vulnerability analysis
+- **[SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)** - Production deployment security checklist
+- **[SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md)** - Quick security guide for developers and operators
+
+**Key Security Features Implemented:**
+- ✅ Zip Slip / Path Traversal protection
+- ✅ Symlink attack prevention
+- ✅ Command injection prevention
+- ✅ Decompression bomb protection
+- ✅ Container security hardening (non-root user, resource limits)
+- ✅ Input validation (file size, type, structure)
+- ✅ Rate limiting support
+
 ## Overview
 
 DocC2Context Service is a FastAPI-based web application that provides a user-friendly interface for converting Swift DocC archives to Markdown format. The service includes:
@@ -10,6 +26,7 @@ DocC2Context Service is a FastAPI-based web application that provides a user-fri
 - Web interface with drag-and-drop upload functionality
 - Real-time progress tracking
 - Comprehensive validation and error handling
+- **Production-ready security hardening**
 
 ## Features
 
@@ -371,12 +388,118 @@ DEBUG=True
 MAX_FILE_SIZE=104857600  # 100MB
 ```
 
+## Security
+
+### Security Features
+
+This service implements comprehensive security hardening to protect against common attacks:
+
+**Input Validation:**
+- File size limits (100MB default)
+- ZIP structure validation
+- Magic number verification
+- Filename sanitization (null bytes, control characters, path traversal)
+- Decompression bomb protection (5:1 ratio limit, 500MB max uncompressed)
+- File count limits (5000 files max)
+- Directory depth limits (10 levels max)
+
+**ZIP Security:**
+- **Zip Slip Protection**: All paths validated with `resolve()` to prevent path traversal
+- **Symlink Prevention**: Symlinks detected in metadata and blocked during extraction
+- **Nested ZIP Detection**: Nested archives detected and blocked
+- **Safe Extraction**: Files extracted with restrictive permissions (0o600)
+
+**Command Injection Prevention:**
+- Whitelist-based command validation
+- Argument sanitization (dangerous characters blocked)
+- Environment variable filtering
+- Null byte detection
+- Always uses `shell=False` for subprocess execution
+
+**Container Security:**
+- Non-root user (appuser, UID 1000)
+- Security options: `no-new-privileges:true`, capability dropping
+- Resource limits: 2 CPU cores, 2GB memory
+- Temporary filesystem mounted with `noexec`, `nosuid`, `nodev`
+- Health checks configured
+
+**API Security:**
+- HTTPS redirect in production
+- Security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, etc.)
+- CORS configuration
+- Rate limiting support (requires Redis)
+- Request timeouts (30s default)
+- Request size limits
+
+### Security Documentation
+
+- **[SECURITY_AUDIT.md](SECURITY_AUDIT.md)** - Comprehensive 900+ line security audit
+  - Threat model and attack surface analysis
+  - Detailed vulnerability analysis (5 critical, 2 high severity fixed)
+  - Secure design patterns and mitigations
+  - Deployment hardening advice
+  - Red team notes and attack scenarios
+  
+- **[SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)** - Production deployment checklist
+  - Pre-deployment security configuration
+  - Environment variables and secrets
+  - Docker and network security
+  - Monitoring and logging setup
+  - Post-deployment verification
+  
+- **[SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md)** - Quick reference guide
+  - Security testing commands
+  - Common attack scenarios
+  - Incident response procedures
+  - Security FAQ
+
+### Running Security Tests
+
+```bash
+# Run comprehensive security test suite
+python -m pytest tests/test_security.py -v
+
+# Run all tests (includes security)
+make test
+
+# Static security analysis
+pip install bandit
+bandit -r app/ -ll
+
+# Dependency vulnerability scan
+pip install safety
+safety check --file requirements.txt
+
+# Container vulnerability scan
+docker run --rm -v $(pwd):/app aquasec/trivy filesystem /app
+```
+
+### Security Best Practices for Deployment
+
+1. **Never disable security features** in production
+2. **Configure specific CORS origins** (remove `["*"]`)
+3. **Disable API documentation** in production (`/docs`, `/redoc`)
+4. **Set up Redis** for proper rate limiting
+5. **Use HTTPS** with valid TLS certificates
+6. **Monitor security logs** for suspicious activity
+7. **Keep dependencies updated** with security patches
+8. **Review SECURITY_CHECKLIST.md** before each deployment
+
+### Reporting Security Issues
+
+If you discover a security vulnerability:
+1. **DO NOT** open a public GitHub issue
+2. Email security@example.com (configure this for your deployment)
+3. Include details of the vulnerability and steps to reproduce
+4. Allow time for patching before public disclosure
+
 ## Documentation
 
 - **API Documentation**: Available at `/docs` when the service is running
 - **Project Documentation**: See the `DOCS/` directory
 - **Work Plan**: `DOCS/Workplan.md`
 - **CI/CD Pipeline**: `.github/workflows/ci-cd.yml`
+- **Security Documentation**: See Security section above
 
 ## CI/CD Pipeline
 
