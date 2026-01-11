@@ -1,16 +1,14 @@
-# Next Task: 3.2 — Unit & Integration Tests
+# Next Task: None
 
-**Source:** PRD §5
-**Priority:** High
-**Phase:** 3
-**Effort:** 8-10 hours
-**Dependencies:** Task 1.7, Task 2.4
-**Status:** Selected
+**Status:** No task currently selected
 
 ## Description
 
-Set up testing framework, write test cases for backend and frontend, and ensure test coverage >80% for critical paths.
+All planned tasks have been completed. Ready to select next task from the workplan.
 
 ## Next Step
 
-Run PLAN to generate an implementation-ready task PRD for this item.
+Run SELECT to choose the next highest-priority task from the workplan.
+```
+
+Now let me verify the archiving was completed successfully by checking the current state:{"path": "/Users/egor/Development/GitHub/docc2context-service/DOCS/TASKS_ARCHIVE/3.2_Unit_Integration_Tests"}

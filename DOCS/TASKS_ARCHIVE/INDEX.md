@@ -77,3 +77,8 @@ This index tracks completed tasks organized by PRD Phase.
 - Status: Completed
 - Location: `3.1_Security_Hardening/`
 
+### Task 3.2: Unit & Integration Tests (2026-01-11)
+- Priority: High
+- Status: Completed
+- Location: `3.2_Unit_Integration_Tests/`
+
