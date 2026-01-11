@@ -55,12 +55,17 @@ jobs:
         python -c "
         import json
         import sys
-        with open('validation_results.json') as f:
-            results = json.load(f)
-        if results['failed'] > 0:
+        try:
+            with open('validation_results.json') as f:
+                results = json.load(f)
+        except Exception as e:
+            print(f'Failed to load validation_results.json: {e}')
+            sys.exit(1)
+
+        if results.get('failed', 0) > 0:
             print(f\"Validation failed with {results['failed']} errors\")
             sys.exit(1)
-        elif results['warnings'] > 0:
+        elif results.get('warnings', 0) > 0:
             print(f\"Validation completed with {results['warnings']} warnings\")
         else:
             print('Validation completed successfully')
