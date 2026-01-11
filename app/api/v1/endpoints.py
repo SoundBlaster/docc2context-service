@@ -1,8 +1,9 @@
 """API v1 endpoints implementation"""
 
 from pathlib import Path
-from fastapi import APIRouter, File, UploadFile, HTTPException, Query
+from fastapi import APIRouter, File, UploadFile, HTTPException, Query, Depends
 from fastapi.responses import JSONResponse
+
 
 from app.core.logging import get_logger
 from app.services.file_validation import validate_upload_file
@@ -15,6 +16,8 @@ logger = get_logger(__name__)
 
 # Create router for endpoints
 router = APIRouter()
+
+
 
 
 @router.get("/health")

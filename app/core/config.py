@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     app_description: str = "Swift DocC to Markdown Web Converter (MVP)"
 
+    # Security Configuration
+    environment: str = "development"  # development, staging, production
+    allowed_hosts: List[str] = ["*"]  # Allowed hosts for TrustedHostMiddleware
+    rate_limit: int = 100  # Maximum requests per minute per IP
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

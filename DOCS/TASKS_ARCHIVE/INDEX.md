@@ -58,7 +58,7 @@ This index tracks completed tasks organized by PRD Phase.
 - Status: Completed
 - Location: `2.2_Drag_and_Drop_Upload_Zone/`
 
-### Task 2.3: Upload Progress & Processing States
+### Task 2.3: Upload Progress & Processing States (2026-01-10)
 - Priority: High
 - Status: Completed
 - Location: `2.3_Upload_Progress_Processing_States/`
@@ -67,4 +67,18 @@ This index tracks completed tasks organized by PRD Phase.
 - Priority: High
 - Status: Completed
 - Location: `2.4_Error_Handling_UI/`
+
+---
+
+## Phase 3: Hardening & Testing
+
+### Task 3.1: Security Hardening (2026-01-11)
+- Priority: High
+- Status: Completed
+- Location: `3.1_Security_Hardening/`
+
+### Task 3.2: Unit & Integration Tests (2026-01-11)
+- Priority: High
+- Status: Completed
+- Location: `3.2_Unit_Integration_Tests/`
 
