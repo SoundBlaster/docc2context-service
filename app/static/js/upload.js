@@ -16,6 +16,9 @@ class FileUploader {
         this.spinner.style.display = 'none';
         this.uploadButton.parentNode.insertBefore(this.spinner, this.uploadButton.nextSibling);
 
+        // Add retry button
+        this.retryButton = document.getElementById('retryButton');
+
         this.selectedFile = null;
         this.isUploading = false;
 
@@ -33,6 +36,9 @@ class FileUploader {
 
         // Upload button events
         this.uploadButton.addEventListener('click', this.handleUploadClick.bind(this));
+
+        // Retry button events
+        this.retryButton.addEventListener('click', this.handleRetryClick.bind(this));
 
         // Prevent default drag behavior on page
         document.addEventListener('dragover', (e) => {
@@ -137,7 +143,9 @@ class FileUploader {
             await this.uploadFile(this.selectedFile);
             this.showStatus('Conversion completed! Download should start automatically.', 'success');
         } catch (error) {
-            this.showStatus(`Conversion failed: ${error.message}`, 'error');
+            const userFriendlyMessage = this.getUserFriendlyErrorMessage(error.message);
+            this.showStatus(userFriendlyMessage, 'error');
+            this.showRetryButton();
         } finally {
             this.isUploading = false;
             this.uploadButton.disabled = false;
@@ -145,6 +153,34 @@ class FileUploader {
             this.hideProgress();
             this.hideSpinner();
         }
+    }
+
+    handleRetryClick() {
+        this.hideStatus();
+        this.hideRetryButton();
+        this.uploadButton.disabled = false;
+    }
+
+    getUserFriendlyErrorMessage(errorMessage) {
+        if (errorMessage.includes('HTTP 400')) {
+            return 'Invalid file type or corrupted ZIP. Please upload a valid DocC archive.';
+        } else if (errorMessage.includes('HTTP 413')) {
+            return 'File size exceeds 100MB limit. Please upload a smaller file.';
+        } else if (errorMessage.includes('HTTP 500')) {
+            return 'Server error occurred during conversion. Please try again later.';
+        } else if (errorMessage.includes('Network error')) {
+            return 'Network error occurred. Please check your connection and try again.';
+        } else {
+            return `Conversion failed: ${errorMessage}`;
+        }
+    }
+
+    showRetryButton() {
+        this.retryButton.style.display = 'block';
+    }
+
+    hideRetryButton() {
+        this.retryButton.style.display = 'none';
     }
 
     async uploadFile(file) {
@@ -194,6 +230,33 @@ class FileUploader {
         };
 
         xhr.send(formData);
+    }
+
+    getUserFriendlyErrorMessage(errorMessage) {
+        if (errorMessage.includes('HTTP 400')) {
+            return 'Invalid file type or corrupted ZIP. Please upload a valid DocC archive.';
+        } else if (errorMessage.includes('HTTP 413')) {
+            return 'File size exceeds 100MB limit. Please upload a smaller file.';
+        } else if (errorMessage.includes('HTTP 500')) {
+            return 'Server error occurred during conversion. Please try again later.';
+        } else if (errorMessage.includes('Network error')) {
+            return 'Network error occurred. Please check your connection and try again.';
+        } else {
+            return `Conversion failed: ${errorMessage}`;
+        }
+    }
+
+    showRetryButton() {
+        this.retryButton.style.display = 'block';
+        this.retryButton.addEventListener('click', () => {
+            this.hideStatus();
+            this.hideRetryButton();
+            this.uploadButton.disabled = false;
+        });
+    }
+
+    hideRetryButton() {
+        this.retryButton.style.display = 'none';
     }
 
     showSpinner() {

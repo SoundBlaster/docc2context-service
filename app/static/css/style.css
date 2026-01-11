@@ -220,6 +220,32 @@ footer {
     font-size: 0.9rem;
 }
 
+/* Retry Button Styles */
+.retry-button {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    margin-top: 1rem;
+    display: none;
+}
+
+.retry-button:hover:not(:disabled) {
+    background-color: #dc2626;
+}
+
+.retry-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 /* Spinner Styles */
 .spinner {
     border: 4px solid #f3f4f6;
