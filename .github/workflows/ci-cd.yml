@@ -24,9 +24,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Swift
-      uses: swift-actions/setup-swift@v2
-      with:
-        swift-version: "5.9"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y swift
 
     - name: Build docc2context CLI
       run: |
