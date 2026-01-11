@@ -28,11 +28,12 @@ import tempfile
 class ProjectValidator:
     """Main validation class for the DocC2Context Service project."""
 
-    def __init__(self, project_root: str = None):
+    def __init__(self, project_root: str = None, args=None):
         """Initialize the validator with the project root directory."""
         self.project_root = project_root or os.getcwd()
         self.verbose = False
         self.verbose_file = None
+        self.args = args
         self.results = {
             'passed': 0,
             'failed': 0,
@@ -50,12 +51,13 @@ class ProjectValidator:
 
     def log(self, message: str, level: str = "info"):
         """Log a message with optional verbosity."""
-        if level in ["error", "warning"]:
-            print(f"[{level.upper()}] {message}")
-        if self.verbose and level == "info":
-            print(f"[{level.upper()}] {message}")
-            if self.verbose_file:
-                self.verbose_file.write(f"[{level.upper()}] {message}\n")
+        if not self.args.json:
+            if level in ["error", "warning"]:
+                print(f"[{level.upper()}] {message}")
+            if self.verbose and level == "info":
+                print(f"[{level.upper()}] {message}")
+                if self.verbose_file:
+                    self.verbose_file.write(f"[{level.upper()}] {message}\n")
 
     def add_result(self, check_name: str, passed: bool, details: str = "", level: str = "info"):
         """Add a validation result to the results dictionary."""
@@ -166,6 +168,12 @@ class ProjectValidator:
         try:
             # Import the FastAPI app
             sys.path.insert(0, self.project_root)
+
+            # Suppress FastAPI logs if --json flag is used
+            import logging
+            if self.args.json:
+                logging.disable(logging.CRITICAL)
+
             from app.main import app
             self.add_result("FastAPI App Import", True, "FastAPI app imported successfully")
 
@@ -196,6 +204,11 @@ class ProjectValidator:
             sys.path.insert(0, self.project_root)
             from fastapi.testclient import TestClient
             from app.main import app
+
+            # Suppress FastAPI logs if --json flag is used
+            import logging
+            if self.args.json:
+                logging.disable(logging.CRITICAL)
 
             client = TestClient(app)
 
@@ -349,7 +362,7 @@ class ProjectValidator:
         """Print validation results in a readable format."""
         results_to_print = results or self.results
 
-        if self.verbose:
+        if self.verbose and not self.args.json:
             print("\n" + "="*50)
             print("DOC2CONTEXT SERVICE VALIDATION RESULTS")
             print("="*50)
@@ -379,7 +392,7 @@ def main():
 
     args = parser.parse_args()
 
-    validator = ProjectValidator(args.project_root)
+    validator = ProjectValidator(args.project_root, args)
     validator.set_verbose(args.verbose, args.output_file)
 
     results = validator.run_all_validations()
