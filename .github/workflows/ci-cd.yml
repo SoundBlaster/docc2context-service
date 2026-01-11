@@ -41,10 +41,10 @@ jobs:
         with open('validation_results.json') as f:
             results = json.load(f)
         if results['failed'] > 0:
-            print(f'Validation failed with {results[\"failed\"]} errors')
+            print(f'Validation failed with {results['failed']} errors')
             sys.exit(1)
         elif results['warnings'] > 0:
-            print(f'Validation completed with {results[\"warnings\"]} warnings')
+            print(f'Validation completed with {results['warnings']} warnings')
         else:
             print('Validation completed successfully')
         "
@@ -115,17 +115,3 @@ jobs:
         echo "Deploying to production..."
         # Add your deployment commands here
         # Example: ssh user@server "docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/docc2context-service:latest && docker-compose up -d"
-```
-The GitHub Actions workflow file has been created. This workflow includes four jobs:
-
-1. **validate**: Runs the project validation script to ensure everything is properly configured
-2. **test**: Runs pytest to execute any tests in the project
-3. **build**: Builds the Docker image and pushes it to Docker Hub (only on main branch)
-4. **deploy**: Deploys the application to production (only on main branch)
-
-The workflow is triggered on pushes and pull requests to the main branch. You'll need to set up the following secrets in your GitHub repository settings:
-
-- `DOCKER_HUB_USERNAME`: Your Docker Hub username
-- `DOCKER_HUB_TOKEN`: Your Docker Hub access token
-
-You can customize the deployment step with your actual deployment commands.
