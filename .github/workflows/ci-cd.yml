@@ -23,14 +23,18 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Ensure docc2context is installed
+    - name: Install Swift
+      uses: swift-actions/setup-swift@v5
+      with:
+        swift-version: "5.9"
+
+    - name: Build docc2context CLI
       run: |
-        if ! command -v docc2context &> /dev/null
-        then
-            echo "Installing docc2context..."
-            # Add specific installation commands here
-            # For example: curl -L -o /usr/local/bin/docc2context https://example.com/docc2context && chmod +x /usr/local/bin/docc2context
-        fi
+        git clone https://github.com/SoundBlaster/docc2context.git
+        cd docc2context
+        swift build -c release
+        cp .build/release/docc2context /usr/local/bin/docc2context
+        chmod +x /usr/local/bin/docc2context
 
     - name: Verify docc2context installation
       run: |
