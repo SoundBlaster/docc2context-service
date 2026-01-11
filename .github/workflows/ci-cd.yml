@@ -23,6 +23,19 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Ensure docc2context is installed
+      run: |
+        if ! command -v docc2context &> /dev/null
+        then
+            echo "Installing docc2context..."
+            # Add specific installation commands here
+            # For example: curl -L -o /usr/local/bin/docc2context https://example.com/docc2context && chmod +x /usr/local/bin/docc2context
+        fi
+
+    - name: Verify docc2context installation
+      run: |
+        docc2context --version
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
