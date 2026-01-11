@@ -227,6 +227,67 @@ pre-commit run --all-files
 - Docstrings: Required for public APIs
 - Test coverage: >80% for critical paths
 
+### Environment Validation
+
+The project includes comprehensive environment validation to ensure proper configuration:
+
+**Environment Validation Script:**
+
+```bash
+# Check current environment
+make env-check
+
+# Or run directly
+python scripts/check_env.py
+
+# Check specific environment
+python scripts/check_env.py --env production
+
+# Run health checks only
+python scripts/check_env.py --health-check
+
+# Check specific component
+python scripts/check_env.py --check docker
+python scripts/check_env.py --check disk
+python scripts/check_env.py --check swift
+```
+
+**Environment Setup:**
+
+```bash
+# Setup development environment (automated)
+make setup-dev
+
+# Or run script directly
+./scripts/setup_dev.sh
+```
+
+**Production Readiness:**
+
+```bash
+# Check if environment is ready for production
+make prod-ready
+
+# Or run script directly
+./scripts/check_prod_ready.sh
+```
+
+**Environment Templates:**
+
+The project includes environment templates for different deployment scenarios:
+
+- `.env.development` - Development environment (relaxed security, verbose logging)
+- `.env.staging` - Staging environment (moderate security)
+- `.env.production` - Production environment (strict security, optimized performance)
+
+**Environment Validation Features:**
+- Validates all environment variables from `app/core/config.py`
+- Type checking and value range validation
+- Environment-specific security rules (dev/staging/prod)
+- Security checks for production (no DEBUG, CORS restrictions, etc.)
+- Health checks (Docker daemon, disk space, Swift CLI)
+- Clear error messages with fix suggestions
+
 ### Validation Script
 
 The project includes a comprehensive validation script with multiple output formats:
