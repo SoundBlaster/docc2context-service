@@ -1,16 +1,16 @@
-# Next Task: None
+# Next Task: 4.2 — Environment Quality Gates
 
-**Status:** No task currently selected
+**Source:** Workplan.md
+**Priority:** High
+**Phase:** 4
+**Effort:** 5-7 hours
+**Dependencies:** Task 3.3 (Documentation & Deployment)
+**Status:** Selected
 
 ## Description
 
-All planned tasks have been completed:
-- Phase 1: Backend (Tasks 1.1-1.8) ✅
-- Phase 2: Frontend (Tasks 2.1-2.4) ✅
-- Phase 3: Hardening & Testing (Tasks 3.1-3.3) ✅
-
-Last completed: Task 3.3 - Documentation & Deployment (2026-01-11)
+Create environment validation scripts to verify all required environment variables, validate configuration, check system dependencies, and ensure production readiness. Implement environment-specific validations for development, staging, and production.
 
 ## Next Step
 
-All tasks from the PRD workplan are complete. The project is ready for production deployment.
+Run PLAN to generate an implementation-ready task PRD for this item.

@@ -1,10 +1,10 @@
 """Subprocess manager for running external commands"""
 
-import subprocess
 import logging
-from typing import Optional
+import subprocess
 
 logger = logging.getLogger(__name__)
+
 
 class SubprocessManager:
     """Manages subprocess execution with error handling and logging"""
@@ -12,7 +12,7 @@ class SubprocessManager:
     def run_command(
         self,
         command: list[str],
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
         capture_output: bool = True,
     ) -> str:
         """

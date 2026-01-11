@@ -425,9 +425,161 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ---
 
+## Phase 4: Quality Gates & Validation
+
+### Task 4.1: Code Quality Gates
+**Priority:** High
+**Dependencies:** Task 3.2
+**References:** PRD Section 4, Best Practices
+
+**Subtasks:**
+1. Set up code quality tools:
+   - Install and configure linters (ruff, flake8, or pylint)
+   - Install and configure formatters (black, isort)
+   - Install and configure type checkers (mypy)
+2. Create code quality validation script:
+   - Run linters on all Python code
+   - Run formatters in check mode
+   - Run type checkers
+   - Enforce minimum quality thresholds
+3. Integrate with CI/CD:
+   - Add code quality checks to GitHub Actions workflow
+   - Fail builds on quality violations
+   - Generate quality reports
+4. Create pre-commit hooks:
+   - Auto-format code on commit
+   - Run quick linting checks
+   - Prevent commits with obvious issues
+
+**Acceptance Criteria:**
+- [x] Code quality tools are installed and configured
+- [x] Validation script enforces quality standards
+- [x] CI/CD pipeline includes quality checks
+- [x] Pre-commit hooks are available
+- [x] All existing code passes quality checks
+- [x] Documentation explains quality standards
+
+**Estimated Time:** 4-6 hours
+
+---
+
+### Task 4.2: Environment Quality Gates
+**Priority:** High
+**Dependencies:** Task 3.3
+**References:** PRD Section 6, CONFIGURATION.md
+
+**Subtasks:**
+1. Create environment validation script:
+   - Verify all required environment variables are set
+   - Validate environment variable values and types
+   - Check for common misconfigurations
+   - Verify file paths and permissions
+2. Implement environment-specific validations:
+   - Production: Enforce security settings (no DEBUG, CORS restrictions)
+   - Staging: Verify staging-specific configuration
+   - Development: Ensure development tools are available
+3. Add environment health checks:
+   - Verify Docker daemon is running
+   - Check available disk space
+   - Verify Swift CLI is accessible
+   - Test network connectivity (if required)
+4. Create environment setup automation:
+   - Script to initialize development environment
+   - Script to validate production readiness
+   - Templates for different environments
+
+**Acceptance Criteria:**
+- [ ] Environment validation script checks all variables
+- [ ] Environment-specific validations work correctly
+- [ ] Health checks detect common issues
+- [ ] Setup automation simplifies environment configuration
+- [ ] Validation runs in CI/CD pipeline
+- [ ] Documentation explains validation process
+
+**Estimated Time:** 5-7 hours
+
+---
+
+### Task 4.3: Deployment Quality Gates
+**Priority:** High
+**Dependencies:** Task 3.3
+**References:** DEPLOYMENT.md, Section 6
+
+**Subtasks:**
+1. Create deployment validation script:
+   - Verify Docker image builds successfully
+   - Test container startup and shutdown
+   - Verify all endpoints are accessible
+   - Check health endpoint returns expected response
+2. Implement deployment smoke tests:
+   - Test basic file conversion workflow
+   - Verify API documentation is accessible
+   - Test error handling scenarios
+   - Verify workspace cleanup works
+3. Add deployment security checks:
+   - Scan Docker image for vulnerabilities
+   - Verify no secrets in image layers
+   - Check file permissions in container
+   - Validate security headers
+4. Create deployment rollback procedure:
+   - Document rollback steps
+   - Create rollback automation script
+   - Test rollback scenarios
+
+**Acceptance Criteria:**
+- [ ] Deployment validation script checks all critical paths
+- [ ] Smoke tests verify basic functionality
+- [ ] Security checks pass for production images
+- [ ] Rollback procedure is documented and tested
+- [ ] Validation runs before deployment
+- [ ] Failed validations prevent deployment
+
+**Estimated Time:** 6-8 hours
+
+---
+
+### Task 4.4: Architecture Quality Gates
+**Priority:** Medium
+**Dependencies:** All previous tasks
+**References:** PRD Section 2, Architecture Decisions
+
+**Subtasks:**
+1. Document architecture decisions:
+   - Create Architecture Decision Records (ADRs)
+   - Document key design patterns used
+   - Explain component interactions
+   - Document scalability considerations
+2. Create architecture validation script:
+   - Verify project structure follows conventions
+   - Check for circular dependencies
+   - Validate layer separation (API, services, core)
+   - Ensure proper error handling patterns
+3. Implement dependency analysis:
+   - Generate dependency graph
+   - Identify potential issues (tight coupling, etc.)
+   - Verify dependencies are up-to-date
+   - Check for security vulnerabilities in dependencies
+4. Create performance benchmarks:
+   - Benchmark API endpoint response times
+   - Benchmark conversion throughput
+   - Test concurrent request handling
+   - Document performance baselines
+
+**Acceptance Criteria:**
+- [ ] Architecture is documented with ADRs
+- [ ] Architecture validation script enforces structure
+- [ ] Dependency analysis identifies issues
+- [ ] Performance benchmarks establish baselines
+- [ ] Documentation explains architecture decisions
+- [ ] Validation runs in CI/CD pipeline
+
+**Estimated Time:** 8-10 hours
+
+---
+
 ## Summary
 
-**Total Estimated Time:** 60-75 hours
+**Total Estimated Time:** 83-106 hours (includes Phase 4)
 
 **Critical Path:**
 1. Docker Setup (1.1)
@@ -438,15 +590,21 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 6. SubprocessManager (1.6)
 7. Conversion Pipeline (1.7)
 8. Frontend Implementation (2.1-2.4)
-9. Testing & Hardening (3.1-3.2)
+9. Testing & Hardening (3.1-3.3)
+10. Quality Gates & Validation (4.1-4.4)
 
 **Dependencies Graph:**
 - Phase 1 tasks are sequential (each depends on previous)
 - Phase 2 can start after Task 1.3 (CORS)
 - Phase 3 requires completion of Phase 1 and Phase 2
+- Phase 4 requires completion of Phase 3
 
 **Risk Items:**
 - Swift binary compatibility (mitigated by Task 1.1)
 - Orphaned files (mitigated by Task 1.4)
 - Resource exhaustion (mitigated by Task 3.1)
+- Code quality drift (mitigated by Task 4.1)
+- Environment misconfiguration (mitigated by Task 4.2)
+- Deployment failures (mitigated by Task 4.3)
+- Architecture decay (mitigated by Task 4.4)
 

@@ -162,16 +162,70 @@ make help
 
 # Install dependencies
 make install
+make install-dev  # Install development dependencies
 
-# Run tests
-make test
+# Code quality
+make format           # Format code with black and isort
+make lint             # Run ruff linter
+make type-check       # Run mypy type checker
+make quality-check    # Run all quality checks
 
-# Validate project
-make validate-project
+# Testing and validation
+make test             # Run tests
+make validate         # Run all validation checks (quality + tests + health)
+make validate-project # Run comprehensive project validation
 
-# Run comprehensive validation with verbose output
-python scripts/validate.py -v -o /tmp/validation.log
+# Development
+make run              # Run the application with uvicorn
+make build-docker     # Build Docker image
 ```
+
+### Code Quality
+
+The project enforces code quality through multiple tools:
+
+**Quality Tools:**
+- **Black**: Code formatter (line length: 100)
+- **isort**: Import sorter (black-compatible profile)
+- **Ruff**: Fast Python linter (replaces flake8, pyflakes, etc.)
+- **Mypy**: Static type checker (warnings-only for MVP)
+
+**Running Quality Checks:**
+
+```bash
+# Run all quality checks
+make quality-check
+
+# Or run individually
+make format      # Auto-format code
+make lint        # Check for linting issues
+make type-check  # Check types
+
+# Or use the script directly
+./scripts/check_quality.sh
+```
+
+**Pre-commit Hooks:**
+
+Install pre-commit hooks to automatically format code on commit:
+
+```bash
+# Install development dependencies
+make install-dev
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks manually on all files
+pre-commit run --all-files
+```
+
+**Code Quality Standards:**
+- Line length: 100 characters
+- Import sorting: black-compatible profile
+- Type hints: Encouraged but not required (MVP)
+- Docstrings: Required for public APIs
+- Test coverage: >80% for critical paths
 
 ### Validation Script
 

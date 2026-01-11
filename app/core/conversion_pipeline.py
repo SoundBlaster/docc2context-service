@@ -1,12 +1,11 @@
 """Conversion pipeline for processing DocC archives"""
 
 import logging
-from typing import Optional
-from pathlib import Path
 
 from app.core.subprocess_manager import SubprocessManager
 
 logger = logging.getLogger(__name__)
+
 
 class ConversionPipeline:
     """Manages the conversion of DocC archives to context format"""
@@ -40,8 +39,7 @@ class ConversionPipeline:
         try:
             # Simulate running a conversion command
             result = self.subprocess_manager.run_command(
-                ['echo', 'Conversion successful'],
-                timeout=30
+                ["echo", "Conversion successful"], timeout=30
             )
             return output_file
         except Exception as e:

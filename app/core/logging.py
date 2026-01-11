@@ -4,7 +4,6 @@ import logging
 import sys
 import uuid
 from contextvars import ContextVar
-from typing import Any, Dict
 
 from pythonjsonlogger import jsonlogger
 
@@ -30,33 +29,32 @@ class RequestIDFilter(logging.Filter):
 
     def filter(self, record: logging.LogRecord) -> bool:
         # Only add request_id if it doesn't already exist
-        if not hasattr(record, 'request_id'):
+        if not hasattr(record, "request_id"):
             record.request_id = get_request_id()
         return True
 
 
 def setup_logging(log_level: str = "INFO") -> None:
     """Configure structured JSON logging"""
-    
+
     # Create JSON formatter
     formatter = jsonlogger.JsonFormatter(
-        "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s",
-        timestamp=True
+        "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s", timestamp=True
     )
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
-    
+
     # Remove existing handlers
     root_logger.handlers = []
-    
+
     # Add console handler with JSON formatter
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
     handler.addFilter(RequestIDFilter())
     root_logger.addHandler(handler)
-    
+
     # Set levels for third-party loggers
     logging.getLogger("uvicorn").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
@@ -65,8 +63,3 @@ def setup_logging(log_level: str = "INFO") -> None:
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance for a module"""
     return logging.getLogger(name)
-
-
-
-
-
