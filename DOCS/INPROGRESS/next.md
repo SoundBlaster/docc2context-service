@@ -1,14 +1,16 @@
-# Next Task: None
+# Next Task: 4.3 — Deployment Quality Gates
 
-**Status:** No task currently selected
+**Source:** Workplan.md
+**Priority:** High
+**Phase:** 4
+**Effort:** 6-8 hours
+**Dependencies:** Task 3.3 (Documentation & Deployment)
+**Status:** Selected
 
 ## Description
 
-All planned tasks have been completed. Ready to select next task from the workplan.
+Create deployment validation scripts to verify Docker image builds, test container functionality, run smoke tests, and perform security checks. Implement deployment rollback procedures and ensure all quality gates pass before production deployment.
 
 ## Next Step
 
-Run SELECT to choose the next highest-priority task from the workplan.
-```
-
-Now let me verify the archiving was completed successfully by checking the current state:{"path": "/Users/egor/Development/GitHub/docc2context-service/DOCS/TASKS_ARCHIVE/3.2_Unit_Integration_Tests"}
+Run PLAN to generate an implementation-ready task PRD for this item.

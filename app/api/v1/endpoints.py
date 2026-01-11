@@ -1,16 +1,13 @@
 """API v1 endpoints implementation"""
 
-from pathlib import Path
-from fastapi import APIRouter, File, UploadFile, HTTPException, Query, Depends
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
 
-
 from app.core.logging import get_logger
-from app.services.file_validation import validate_upload_file
-from app.services.workspace_manager import workspace_manager
 from app.services.conversion_pipeline import conversion_pipeline
-from app.services.response_streaming import response_streamer
+from app.services.file_validation import validate_upload_file
 from app.services.health_service import health_service
+from app.services.workspace_manager import workspace_manager
 
 logger = get_logger(__name__)
 
@@ -18,72 +15,97 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-
-
 @router.get("/health")
-async def health_check(include_system: bool = Query(False, description="Include optional system checks")):
+async def health_check(
+    include_system: bool = Query(False, description="Include optional system checks")
+):
     """
     Health check endpoint
-    
+
     Returns system health status including Swift CLI binary detection.
     Optional system checks can be enabled with query parameter.
-    
+
     Args:
         include_system: Whether to include disk space and memory checks
-        
+
     Returns:
         JSON response with health status
+
+    Example:
+        Basic health check:
+        ```bash
+        curl http://localhost:8000/api/v1/health
+        ```
+
+        Response:
+        ```json
+        {
+            "status": "ready",
+            "binary_detected": true
+        }
+        ```
+
+        With system checks:
+        ```bash
+        curl "http://localhost:8000/api/v1/health?include_system=true"
+        ```
     """
     try:
-        health_status = await health_service.get_health_status(
-            include_system_checks=include_system
-        )
-        
+        health_status = await health_service.get_health_status(include_system_checks=include_system)
+
         logger.info(
             "Health check completed",
             extra={
                 "overall_status": health_status["status"],
                 "binary_detected": health_status["binary_detected"],
-                "include_system": include_system
-            }
+                "include_system": include_system,
+            },
         )
-        
-        return JSONResponse(
-            status_code=200,
-            content=health_status
-        )
-        
+
+        return JSONResponse(status_code=200, content=health_status)
+
     except Exception as e:
         logger.error(
-            "Health check failed",
-            extra={
-                "include_system": include_system,
-                "error": str(e)
-            }
+            "Health check failed", extra={"include_system": include_system, "error": str(e)}
         )
-        raise HTTPException(
-            status_code=500,
-            detail="Health check failed"
-        )
+        raise HTTPException(status_code=500, detail="Health check failed")
 
 
 @router.post("/convert")
 async def convert_file(file: UploadFile = File(...)):
     """
     Convert DocC archive to Markdown
-    
+
     Upload a DocC archive (.doccarchive) for conversion to Markdown format.
     The file must be a valid ZIP archive under 100MB.
-    
+
     Args:
         file: The DocC archive file to convert
-        
+
     Returns:
         StreamingResponse: ZIP file containing converted Markdown content
         JSONResponse: Error response with details
-        
+
     Raises:
         HTTPException: For validation errors or processing failures
+
+    Example:
+        Using cURL:
+        ```bash
+        curl -X POST http://localhost:8000/api/v1/convert \
+          -F "file=@/path/to/archive.doccarchive.zip" \
+          --output converted.zip
+        ```
+
+        Success Response (200):
+        - Binary ZIP file download
+        - Content-Type: application/zip
+        - Content-Disposition: attachment; filename="archive_converted.zip"
+
+        Error Responses:
+        - 400: Invalid file type or corrupted ZIP
+        - 413: File size exceeds 100MB limit
+        - 500: Conversion failed (includes CLI stderr for debugging)
     """
     async with workspace_manager.create_workspace() as workspace:
         try:
@@ -92,56 +114,54 @@ async def convert_file(file: UploadFile = File(...)):
                 extra={
                     "upload_filename": file.filename,
                     "content_type": file.content_type,
-                    "workspace_path": str(workspace)
-                }
+                    "workspace_path": str(workspace),
+                },
             )
-            
+
             # Validate the uploaded file
             content, safe_filename = await validate_upload_file(file)
-            
+
             # Store the file in the workspace
             file_path = workspace_manager.get_file_path(workspace, safe_filename)
-            
-            with open(file_path, 'wb') as f:
+
+            with open(file_path, "wb") as f:
                 f.write(content)
-            
+
             logger.info(
                 "File stored in workspace",
                 extra={
                     "safe_filename": safe_filename,
                     "file_path": str(file_path),
                     "file_size": len(content),
-                    "workspace_path": str(workspace)
-                }
+                    "workspace_path": str(workspace),
+                },
             )
-            
+
             # Run complete conversion pipeline
             try:
                 output_zip_path = await conversion_pipeline.run_complete_pipeline(
-                    input_zip_path=file_path,
-                    workspace=workspace
+                    input_zip_path=file_path, workspace=workspace
                 )
-                
+
                 # Read the ZIP content before workspace cleanup
-                with open(output_zip_path, 'rb') as zip_file:
+                with open(output_zip_path, "rb") as zip_file:
                     zip_content = zip_file.read()
-                
+
                 # Create streaming response with ZIP content
-                zip_filename = safe_filename.replace('.zip', '_converted.zip')
-                
+                zip_filename = safe_filename.replace(".zip", "_converted.zip")
+
                 from fastapi.responses import Response
+
                 return Response(
                     content=zip_content,
                     media_type="application/zip",
-                    headers={
-                        "Content-Disposition": f"attachment; filename=\"{zip_filename}\""
-                    }
+                    headers={"Content-Disposition": f'attachment; filename="{zip_filename}"'},
                 )
-                
+
             except Exception as conversion_error:
                 # Handle conversion errors gracefully
                 error_message = str(conversion_error)
-                
+
                 # Check if it's a Swift CLI error
                 if "Conversion failed:" in error_message:
                     # Extract CLI stderr for detailed error reporting
@@ -152,13 +172,10 @@ async def convert_file(file: UploadFile = File(...)):
                             "upload_filename": file.filename,
                             "workspace_path": str(workspace),
                             "cli_stderr": cli_stderr,
-                            "full_error": error_message
-                        }
+                            "full_error": error_message,
+                        },
                     )
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Conversion failed: {cli_stderr}"
-                    )
+                    raise HTTPException(status_code=500, detail=f"Conversion failed: {cli_stderr}")
                 else:
                     # Other conversion errors
                     logger.error(
@@ -166,14 +183,13 @@ async def convert_file(file: UploadFile = File(...)):
                         extra={
                             "upload_filename": file.filename,
                             "workspace_path": str(workspace),
-                            "error": error_message
-                        }
+                            "error": error_message,
+                        },
                     )
                     raise HTTPException(
-                        status_code=500,
-                        detail=f"Conversion failed: {error_message}"
+                        status_code=500, detail=f"Conversion failed: {error_message}"
                     )
-            
+
         except HTTPException:
             # Re-raise HTTP exceptions (validation errors, conversion errors)
             raise
@@ -183,10 +199,9 @@ async def convert_file(file: UploadFile = File(...)):
                 extra={
                     "upload_filename": file.filename,
                     "workspace_path": str(workspace),
-                    "error": str(e)
-                }
+                    "error": str(e),
+                },
             )
             raise HTTPException(
-                status_code=500,
-                detail="Internal server error during file processing"
+                status_code=500, detail="Internal server error during file processing"
             )

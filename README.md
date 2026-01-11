@@ -73,9 +73,84 @@ open http://localhost:8000
 
 ### API Endpoints
 
-- **Health Check**: `GET /api/v1/health`
-- **File Upload**: `POST /api/v1/convert`
-- **Documentation**: `GET /docs` (Swagger UI)
+#### Health Check - `GET /api/v1/health`
+
+Check service health and Swift binary availability.
+
+**Request:**
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "ready",
+  "binary_detected": true
+}
+```
+
+**With System Checks:**
+```bash
+curl "http://localhost:8000/api/v1/health?include_system=true"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "ready",
+  "binary_detected": true,
+  "system": {
+    "disk_space_available": true,
+    "memory_available": true
+  }
+}
+```
+
+#### File Conversion - `POST /api/v1/convert`
+
+Upload and convert a DocC archive to Markdown format.
+
+**Request:**
+```bash
+curl -X POST http://localhost:8000/api/v1/convert \
+  -F "file=@/path/to/your/archive.doccarchive.zip" \
+  --output converted.zip
+```
+
+**Success Response (200 OK):**
+- Returns a ZIP file containing the converted Markdown content
+- Content-Type: `application/zip`
+- Content-Disposition: `attachment; filename="archive_converted.zip"`
+
+**Error Responses:**
+
+**400 Bad Request** - Invalid file type or corrupted ZIP:
+```json
+{
+  "detail": "Invalid ZIP file: File header validation failed"
+}
+```
+
+**413 Payload Too Large** - File exceeds 100MB:
+```json
+{
+  "detail": "File size exceeds maximum allowed size of 104857600 bytes"
+}
+```
+
+**500 Internal Server Error** - Conversion failure:
+```json
+{
+  "detail": "Conversion failed: Swift CLI stderr output here"
+}
+```
+
+#### Interactive API Documentation
+
+- **Swagger UI**: `GET /docs` - Interactive API documentation with try-it-out functionality
+- **ReDoc**: `GET /redoc` - Alternative API documentation format
+- **OpenAPI Schema**: `GET /openapi.json` - Raw OpenAPI 3.0 specification
 
 ### Makefile Commands
 
@@ -87,16 +162,131 @@ make help
 
 # Install dependencies
 make install
+make install-dev  # Install development dependencies
 
-# Run tests
-make test
+# Code quality
+make format           # Format code with black and isort
+make lint             # Run ruff linter
+make type-check       # Run mypy type checker
+make quality-check    # Run all quality checks
 
-# Validate project
-make validate-project
+# Testing and validation
+make test             # Run tests
+make validate         # Run all validation checks (quality + tests + health)
+make validate-project # Run comprehensive project validation
 
-# Run comprehensive validation with verbose output
-python scripts/validate.py -v -o /tmp/validation.log
+# Development
+make run              # Run the application with uvicorn
+make build-docker     # Build Docker image
 ```
+
+### Code Quality
+
+The project enforces code quality through multiple tools:
+
+**Quality Tools:**
+- **Black**: Code formatter (line length: 100)
+- **isort**: Import sorter (black-compatible profile)
+- **Ruff**: Fast Python linter (replaces flake8, pyflakes, etc.)
+- **Mypy**: Static type checker (warnings-only for MVP)
+
+**Running Quality Checks:**
+
+```bash
+# Run all quality checks
+make quality-check
+
+# Or run individually
+make format      # Auto-format code
+make lint        # Check for linting issues
+make type-check  # Check types
+
+# Or use the script directly
+./scripts/check_quality.sh
+```
+
+**Pre-commit Hooks:**
+
+Install pre-commit hooks to automatically format code on commit:
+
+```bash
+# Install development dependencies
+make install-dev
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks manually on all files
+pre-commit run --all-files
+```
+
+**Code Quality Standards:**
+- Line length: 100 characters
+- Import sorting: black-compatible profile
+- Type hints: Encouraged but not required (MVP)
+- Docstrings: Required for public APIs
+- Test coverage: >80% for critical paths
+
+### Environment Validation
+
+The project includes comprehensive environment validation to ensure proper configuration:
+
+**Environment Validation Script:**
+
+```bash
+# Check current environment
+make env-check
+
+# Or run directly
+python scripts/check_env.py
+
+# Check specific environment
+python scripts/check_env.py --env production
+
+# Run health checks only
+python scripts/check_env.py --health-check
+
+# Check specific component
+python scripts/check_env.py --check docker
+python scripts/check_env.py --check disk
+python scripts/check_env.py --check swift
+```
+
+**Environment Setup:**
+
+```bash
+# Setup development environment (automated)
+make setup-dev
+
+# Or run script directly
+./scripts/setup_dev.sh
+```
+
+**Production Readiness:**
+
+```bash
+# Check if environment is ready for production
+make prod-ready
+
+# Or run script directly
+./scripts/check_prod_ready.sh
+```
+
+**Environment Templates:**
+
+The project includes environment templates for different deployment scenarios:
+
+- `.env.development` - Development environment (relaxed security, verbose logging)
+- `.env.staging` - Staging environment (moderate security)
+- `.env.production` - Production environment (strict security, optimized performance)
+
+**Environment Validation Features:**
+- Validates all environment variables from `app/core/config.py`
+- Type checking and value range validation
+- Environment-specific security rules (dev/staging/prod)
+- Security checks for production (no DEBUG, CORS restrictions, etc.)
+- Health checks (Docker daemon, disk space, Swift CLI)
+- Clear error messages with fix suggestions
 
 ### Validation Script
 
@@ -226,9 +416,78 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch
 5. Open a pull request
 
+## Troubleshooting
+
+### Common Issues
+
+#### Installation Issues
+
+**Problem: `pip install` fails with dependency errors**
+```bash
+# Solution: Upgrade pip and try again
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+**Problem: Docker build fails with Swift compilation errors**
+```bash
+# Solution: Ensure you have enough memory allocated to Docker (minimum 4GB recommended)
+# Check Docker settings and increase memory limit if needed
+docker system info | grep -i memory
+```
+
+#### Runtime Issues
+
+**Problem: Health check returns `binary_detected: false`**
+```bash
+# Solution: Verify Swift binary is in the Docker image
+docker run --rm docc2context-service which docc2context
+# If missing, rebuild the Docker image
+make build-docker
+```
+
+**Problem: Conversion fails with timeout error**
+```bash
+# Solution: Large archives may need more time. Check logs for details:
+docker logs <container-id>
+# Consider increasing timeout in app/core/config.py
+```
+
+**Problem: Upload fails with 413 error**
+```bash
+# Solution: File exceeds 100MB limit. Compress the archive or increase MAX_FILE_SIZE in .env
+# Note: Increasing the limit may require more server resources
+```
+
+#### Development Issues
+
+**Problem: Tests fail with import errors**
+```bash
+# Solution: Ensure you're in the project directory and dependencies are installed
+cd /path/to/docc2context-service
+pip install -r requirements.txt
+pytest -v
+```
+
+**Problem: Validation script fails**
+```bash
+# Solution: Run with verbose output to identify the issue
+python scripts/validate.py -v
+# Check for missing dependencies or configuration issues
+```
+
+### Getting Help
+
+If you encounter issues not listed here:
+
+1. Check the application logs for detailed error messages
+2. Review the [API Documentation](http://localhost:8000/docs) for endpoint details
+3. Consult the [Deployment Guide](DOCS/DEPLOYMENT.md) for production setup
+4. Open an issue on GitHub with:
+   - Error messages and stack traces
+   - Steps to reproduce the issue
+   - Your environment details (OS, Python version, Docker version)
+
 ## License
 
 This project is licensed under the MIT License.
-```
-
-Now you can use the updated README.md with comprehensive project information and usage instructions. The document includes sections on installation, usage, development, configuration, and contributing guidelines.

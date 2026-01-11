@@ -1,9 +1,9 @@
 """Health service for monitoring application health"""
 
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
+
 
 class HealthService:
     """Monitors and reports application health status"""
@@ -26,4 +26,4 @@ class HealthService:
             raise RuntimeError("Health check failed")
 
         logger.info("Health check passed")
-        return {'status': 'healthy'}
+        return {"status": "healthy"}

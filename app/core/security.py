@@ -2,8 +2,8 @@
 
 from fastapi import Request, Response
 from fastapi.middleware import Middleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
 
 class SecurityMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers and enforce security policies"""
@@ -40,9 +40,12 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
         # Add Strict-Transport-Security header (HSTS)
         if request.url.scheme == "https":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains; preload"
+            )
 
         return response
+
 
 def get_security_middleware() -> Middleware:
     """Get the security middleware for FastAPI"""

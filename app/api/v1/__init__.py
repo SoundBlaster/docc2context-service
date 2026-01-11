@@ -11,8 +11,3 @@ router = APIRouter(prefix="/api/v1", tags=["v1"])
 router.include_router(endpoints_router, tags=["conversion"])
 
 # Routes will be added here in future tasks
-
-
-
-
-
