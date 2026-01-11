@@ -24,15 +24,34 @@ router = APIRouter()
 async def health_check(include_system: bool = Query(False, description="Include optional system checks")):
     """
     Health check endpoint
-    
+
     Returns system health status including Swift CLI binary detection.
     Optional system checks can be enabled with query parameter.
-    
+
     Args:
         include_system: Whether to include disk space and memory checks
-        
+
     Returns:
         JSON response with health status
+
+    Example:
+        Basic health check:
+        ```bash
+        curl http://localhost:8000/api/v1/health
+        ```
+
+        Response:
+        ```json
+        {
+            "status": "ready",
+            "binary_detected": true
+        }
+        ```
+
+        With system checks:
+        ```bash
+        curl "http://localhost:8000/api/v1/health?include_system=true"
+        ```
     """
     try:
         health_status = await health_service.get_health_status(
@@ -71,19 +90,37 @@ async def health_check(include_system: bool = Query(False, description="Include 
 async def convert_file(file: UploadFile = File(...)):
     """
     Convert DocC archive to Markdown
-    
+
     Upload a DocC archive (.doccarchive) for conversion to Markdown format.
     The file must be a valid ZIP archive under 100MB.
-    
+
     Args:
         file: The DocC archive file to convert
-        
+
     Returns:
         StreamingResponse: ZIP file containing converted Markdown content
         JSONResponse: Error response with details
-        
+
     Raises:
         HTTPException: For validation errors or processing failures
+
+    Example:
+        Using cURL:
+        ```bash
+        curl -X POST http://localhost:8000/api/v1/convert \
+          -F "file=@/path/to/archive.doccarchive.zip" \
+          --output converted.zip
+        ```
+
+        Success Response (200):
+        - Binary ZIP file download
+        - Content-Type: application/zip
+        - Content-Disposition: attachment; filename="archive_converted.zip"
+
+        Error Responses:
+        - 400: Invalid file type or corrupted ZIP
+        - 413: File size exceeds 100MB limit
+        - 500: Conversion failed (includes CLI stderr for debugging)
     """
     async with workspace_manager.create_workspace() as workspace:
         try:
