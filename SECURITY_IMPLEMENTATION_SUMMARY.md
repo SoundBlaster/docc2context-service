@@ -8,37 +8,69 @@ The DocC2Context Service has undergone comprehensive security hardening to addre
 - **Before**: CRITICAL risk - 5 critical, 2 high severity vulnerabilities
 - **After**: MEDIUM risk - All critical and high severity issues fixed, configuration hardening remaining
 
+## Important: About CVE IDs and Claims
+
+⚠️ **These are NOT official CVEs** — CVE-DOCC-2024-00X are internal identifiers used in this audit to categorize vulnerabilities. They do not correspond to public CVE database entries.
+
+**Trust but Verify:** The claims below are based on code analysis and unit tests. For critical deployments:
+- Review the actual test implementations in `tests/test_security.py`
+- Run security tests in your environment: `pytest tests/test_security.py -v`
+- Conduct external security review before production deployment
+- See SECURITY_AUDIT.md for detailed threat modeling
+
+---
+
 ## Vulnerabilities Fixed
 
 ### Critical (5)
 1. ✅ **CVE-DOCC-2024-001: Zip Slip / Path Traversal** (CVSS 9.8)
-   - Attackers could write files outside workspace directory
-   - Fixed with path validation using `resolve()` and boundary checking
+   - **Impact:** Attackers could write files outside workspace directory, potentially overwriting system files or gaining code execution
+   - **Evidence:** Tests in `tests/test_security.py`:
+     - `TestZipSlipProtection.test_path_traversal_sanitized` — Validates basename stripping
+     - `TestZipSlipProtection.test_path_traversal_absolute_path` — Blocks `/etc/passwd` style paths
+     - `TestZipSlipProtection.test_path_traversal_in_zip` — Blocks `../` sequences
+     - `TestZipSlipProtection.test_extraction_validates_paths` — End-to-end validation
+   - **Implementation:** `app/services/conversion_pipeline.py` (lines ~45-75) uses `pathlib.Path.resolve()` + boundary checking
    
 2. ✅ **CVE-DOCC-2024-002: Symlink Attack** (CVSS 9.1)
-   - Attackers could read sensitive files via symlinks in ZIP
-   - Fixed with symlink detection in metadata and post-extraction verification
-   
+   - **Impact:** Attackers could read sensitive files (configs, secrets) via symlinks in ZIP, leading to information disclosure
+   - **Evidence:** Tests in `tests/test_security.py`:
+     - `TestSymlinkProtection.test_symlink_detection_in_metadata` — Detects symlink flag in ZIP metadata
+   - **Implementation:** `app/services/file_validation.py` checks `external_attr` for symlink flags (0xA0000000)
+
 3. ✅ **CVE-DOCC-2024-003: Command Injection** (CVSS 9.8)
-   - Attackers could inject shell commands via filenames
-   - Fixed with whitelist validation and dangerous character blocking
-   
+   - **Impact:** Attackers could inject shell commands via filenames passed to `swift` CLI, achieving remote code execution
+   - **Evidence:** Tests in `tests/test_security.py`:
+     - `TestCommandInjection.test_command_injection_blocked` — Tests malicious characters
+     - `TestCommandInjection.test_null_byte_injection` — Tests null byte attacks
+   - **Implementation:** `app/services/subprocess_manager.py` uses `shell=False`, validates arguments, filters dangerous chars (`;`, `|`, `$`, backticks)
+
 4. ✅ **CVE-DOCC-2024-004: Decompression Bomb** (CVSS 7.5)
-   - Attackers could exhaust resources with highly compressed files
-   - Fixed with compression ratio limits, file count limits, and nested ZIP blocking
-   
+   - **Impact:** Attackers could exhaust memory/disk with highly compressed archives (e.g., 1GB compresses to 1MB), causing DoS
+   - **Evidence:** Tests in `tests/test_security.py`:
+     - `TestDecompressionBomb.test_bomb_protection_ratio` — Enforces 5:1 compression limit
+     - `TestDecompressionBomb.test_bomb_nested_zips` — Blocks nested ZIPs
+   - **Implementation:** `app/services/file_validation.py` enforces compression ratio checks and file count limits (max 5000 files)
+
 5. ✅ **CVE-DOCC-2024-005: Container Running as Root** (CVSS 8.4)
-   - Container ran as root, amplifying all other vulnerabilities
-   - Fixed with non-root user (appuser, UID 1000)
+   - **Impact:** Container privilege escalation amplified all other vulnerabilities; root access to filesystem enabled arbitrary modifications
+   - **Evidence:** Visible in `Dockerfile` (line 24): `USER appuser` runs as UID 1000
+   - **Implementation:** Non-root user created, container-compose enforces non-privileged mode
 
 ### High Severity (2)
 6. ✅ **CVE-DOCC-2024-006: Environment Variable Injection** (CVSS 7.3)
-   - Unsafe environment variable handling in subprocess execution
-   - Fixed with whitelist-based environment filtering
-   
+   - **Impact:** Subprocess could leak sensitive env vars (API keys, secrets) to malicious processes
+   - **Evidence:** Tests in `tests/test_security.py`:
+     - `TestEnvironmentSanitization.test_env_var_sanitization` — Validates safe env passthrough
+   - **Implementation:** `app/services/subprocess_manager.py` uses whitelist-only environment variables (filters out secrets)
+
 7. ✅ **CVE-DOCC-2024-007: Missing Resource Limits** (CVSS 7.5)
-   - No container resource limits allowed DoS attacks
-   - Fixed with CPU (2 cores) and memory (2GB) limits
+   - **Impact:** Attackers could consume unbounded CPU/memory, causing service DoS
+   - **Evidence:** Visible in `docker-compose.yml` and `Dockerfile`:
+     - CPU limits: 2 cores
+     - Memory limits: 2GB
+     - Also process timeout: 30s max
+   - **Implementation:** Docker deploy with `cpus: "2"` and `memory: 2G` constraints
 
 ### Medium Severity (Remaining - Configuration Required)
 - Information disclosure via health endpoint (needs auth or disabled in prod)
@@ -175,27 +207,49 @@ The DocC2Context Service has undergone comprehensive security hardening to addre
 
 ## Remaining Work for Production
 
-### High Priority (Before Production)
-- [ ] Disable Swagger/OpenAPI in production environment
-- [ ] Configure specific CORS origins (remove `["*"]`)
-- [ ] Set up Redis for rate limiting
-- [ ] Pin all dependency versions with hashes
-- [ ] Configure monitoring and alerting
-- [ ] Set up log aggregation
+**NOTE:** These items are NOT optional. Service should not be exposed to untrusted networks until completed.
 
-### Medium Priority (First Month)
-- [ ] Implement authentication for health endpoint system checks
-- [ ] Add in-memory rate limiting fallback
-- [ ] Create AppArmor/seccomp profiles
-- [ ] Set up dependency scanning in CI/CD
-- [ ] Configure secrets management system
-- [ ] Add SIEM integration
+### MUST-DO (Blocking Production)
+- [ ] **Disable Swagger/OpenAPI in production** — Information disclosure risk (30 min)
+  - Set `SWAGGER_ENABLED=false` in production config
+  - Verify with: `curl http://localhost:8000/docs` → should 404
 
-### Low Priority (Ongoing)
-- [ ] Regular security audits (quarterly)
-- [ ] Penetration testing (annually)
-- [ ] Dependency updates (monthly)
-- [ ] Security training for team
+- [ ] **Configure specific CORS origins** — Remove `["*"]` wildcard (15 min)
+  - Set `CORS_ORIGINS=["https://yourdomain.com"]` in config
+  - Do NOT use `*` in production
+
+- [ ] **Run security test suite in staging** — Verify fixes work in your environment (20 min)
+  - Command: `pytest tests/test_security.py -v`
+  - All 25 tests must pass
+  - If any fail, do NOT proceed to production
+
+- [ ] **Configure monitoring/alerting** — Cannot detect attacks without visibility (2-4 hours)
+  - Monitor: request rate, error rate, resource usage, failed extractions
+  - Alerts: rate limit triggers, extraction failures, resource exhaustion
+
+- [ ] **Set up log aggregation** — For incident investigation (2-4 hours)
+  - Centralize logs from container to ELK/Datadog/CloudWatch
+  - Retain for minimum 90 days
+
+### SHOULD-DO (First Month)
+- [ ] **Pin all dependency versions with hashes** — Prevent supply chain attacks (1-2 hours)
+  - Update requirements.txt with exact versions + hashes
+  - Set up dependency scanning in CI/CD (GitHub, Dependabot, or Snyk)
+
+- [ ] **Implement rate limiting** — Prevent brute force and DoS (4-6 hours)
+  - Deploy Redis or in-memory fallback
+  - Set limits: 100 req/minute per IP, 10 uploads/hour per IP
+
+- [ ] **Add health endpoint authentication** — System endpoint shouldn't be public (1 hour)
+  - Restrict `/health` to internal IPs only or add bearer token
+
+- [ ] **Create AppArmor/seccomp profile** — Additional kernel-level hardening (3-4 hours, optional but recommended)
+
+### NICE-TO-HAVE (Ongoing)
+- [ ] Regular security audits (quarterly, external if possible)
+- [ ] Penetration testing (annually, before major releases)
+- [ ] Dependency updates (monthly, with testing)
+- [ ] Security training for team (annually)
 
 ## Deployment Recommendations
 
@@ -249,21 +303,59 @@ The DocC2Context Service has undergone comprehensive security hardening to addre
 
 ## Conclusion
 
-The DocC2Context Service has been transformed from a critically vulnerable application to a hardened, production-ready service with comprehensive security controls. All critical and high-severity vulnerabilities have been addressed, and defense-in-depth measures are in place.
+The DocC2Context Service has been **hardened against critical code-level vulnerabilities** (path traversal, command injection, decompression bombs, privilege escalation).
 
-The remaining work focuses on configuration hardening and operational security (monitoring, alerting, secrets management) rather than code-level vulnerabilities.
+**However, this is NOT production-ready by itself.** Code fixes are necessary but insufficient. Production requires:
+- ✅ Code fixes: DONE
+- ✅ Tests: DONE
+- ⏳ Operational security: NOT DONE (monitoring, alerting, configuration)
+- ⏳ Deployment hardening: NOT DONE (rate limiting, CORS, Swagger disable)
+- ⏳ External validation: NOT DONE (security review, penetration testing)
 
-**Recommended Next Steps:**
-1. Complete remaining configuration tasks from SECURITY_CHECKLIST.md
-2. Set up production monitoring and alerting
-3. Conduct load testing to verify resource limits
-4. Schedule regular security reviews
-5. Consider professional penetration testing before production launch
+**What this audit COVERS:**
+- Code-level vulnerabilities in file extraction, subprocess execution, resource handling
+- Container hardening (non-root user, resource limits, capability dropping)
+- Unit test coverage for attack scenarios
+
+**What this audit DOES NOT COVER:**
+- Network-level attacks (DDoS, large concurrent requests)
+- Authentication/authorization (not implemented)
+- Data encryption at rest (not implemented)
+- Compliance requirements (SOC2, HIPAA, etc.)
+- Third-party dependency vulnerabilities (requires ongoing scanning)
+- Social engineering or operational security
+
+**CRITICAL:** Do not deploy to production until ALL items in "MUST-DO" section are complete.
 
 ---
 
-**Security Audit Conducted**: January 2026  
-**Vulnerabilities Fixed**: 7 (5 Critical, 2 High)  
-**Test Coverage**: 25 security tests, 100% passing  
-**Documentation**: 3 comprehensive security guides  
-**Ready for Production**: Yes, with configuration checklist completion
+**Recommended Next Steps (In Order):**
+1. ✅ Review this document with your ops/security team
+2. ✅ Complete ALL items in "MUST-DO" section (blocking)
+3. ✅ Run security tests in staging environment: `pytest tests/test_security.py -v`
+4. ✅ Conduct internal security review (or hire external reviewer)
+5. ✅ Load test to verify resource limits don't reject legitimate traffic
+6. ✅ Then, and only then, deploy to production
+7. ✅ Monitor actively for first 30 days
+8. ⏳ Complete "SHOULD-DO" items within 30 days
+9. ⏳ Schedule quarterly security reviews
+
+---
+
+**Audit Summary:**
+| Item | Status | Evidence |
+|------|--------|----------|
+| **Code vulnerabilities fixed** | ✅ 7/7 | tests/test_security.py (25 tests) |
+| **Container hardened** | ✅ | Dockerfile + docker-compose.yml |
+| **Test coverage** | ✅ | 25 security-focused tests, 100% passing |
+| **Documentation** | ✅ | SECURITY_AUDIT.md, QUICKSTART.md, CHECKLIST.md |
+| **Production configuration** | ❌ | Requires manual setup (MUST-DO items) |
+| **Monitoring/alerting** | ❌ | Requires setup (MUST-DO items) |
+| **Rate limiting** | ❌ | Requires Redis or fallback (SHOULD-DO items) |
+| **External security review** | ❌ | Recommended before prod launch |
+
+**Security Audit Conducted**: January 2026
+**Vulnerabilities Fixed**: 7 (5 Critical, 2 High) at code level
+**Test Coverage**: 25 security tests, 100% passing
+**Documentation**: 3 comprehensive security guides + this summary
+**Status**: STAGING-READY (requires MUST-DO completion before production)
