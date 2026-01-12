@@ -1,31 +1,31 @@
-# Next Task: 5.6 — Security Testing in Staging
+# Next Task: 5.8 — Deployment Runbook & Handoff
 
 **Source:** Workplan.md
-**Priority:** Critical (Before Production)
+**Priority:** High (Before Production)
 **Phase:** 5
-**Effort:** 8-12 hours
-**Dependencies:** Task 5.1 ✅, Task 5.2 ✅, Task 5.3 ✅
+**Effort:** 4-6 hours
+**Dependencies:** All Phase 5 tasks ✅
 **Status:** Selected
 
 ## Description
 
-Run comprehensive security testing in staging environment to validate all security measures implemented in Tasks 5.1, 5.2, and 5.3. Execute security test suite, test resource limits under load, verify security checklist, and conduct internal security review.
+Create production deployment checklist, runbooks for common operations, incident response playbook, and conduct team handoff. This is the final blocking task before production deployment.
 
 ## Key Requirements
 
-- Execute all 25 security tests in staging environment
-- Test resource limits (file size, batch uploads, memory/CPU monitoring)
-- Manually verify SECURITY_CHECKLIST.md items
-- Conduct internal security review with team member
-- Document all results and address any failures
+- Create production deployment checklist with verification steps
+- Create runbook for common operations (deploy, rollback, scale)
+- Create incident response playbook for security incidents
+- Conduct operations team handoff and training
+- Document all procedures for ongoing maintenance
 
 ## Acceptance Criteria
 
-- All 25 security tests pass in staging
-- Resource limits work correctly under load
-- All SECURITY_CHECKLIST.md items are verified
-- Internal review is complete and documented
-- No blockers found (or documented and mitigated)
+- Deployment checklist is complete with approval gates
+- Runbooks cover all common operations
+- Incident response playbook is documented and tested
+- Operations team trained and deployment rehearsal successful
+- All procedures documented and accessible
 
 ## Next Step
 
