@@ -101,3 +101,24 @@ This index tracks completed tasks organized by PRD Phase.
 - Status: Completed
 - Location: `4.2_Environment_Quality_Gates/`
 
+---
+
+## Phase 5: Production Security Hardening & Deployment
+
+### Task 5.1: Disable Swagger and Configure CORS (2026-01-13)
+- Priority: Critical (Blocking Production)
+- Status: Completed
+- Effort: 1-2 hours (actual: ~2 hours)
+- Location: `5.1_Disable_Swagger_Configure_CORS/`
+- Summary:
+  * Added SWAGGER_ENABLED configuration (default: True for dev, enforced False for prod)
+  * Added CORS_ORIGINS parsing from JSON array format
+  * Added production validation to reject CORS wildcard and enforce swagger_enabled=False
+  * Created .env.production template with all required production settings
+  * Added security configuration tests
+- Changes:
+  * `app/core/config.py`: Settings validation and parsing
+  * `app/main.py`: Conditional Swagger docs disabling
+  * `tests/test_config_security.py`: Configuration security tests
+  * `.env.production`: Production configuration template
+

@@ -1,16 +1,6 @@
-# Next Task: 5.1 — Disable Swagger and Configure CORS
+# Next Task: (awaiting selection)
 
-**Source:** Workplan.md
-**Priority:** Critical (Blocking Production)
-**Phase:** 5
-**Effort:** 1-2 hours
-**Dependencies:** Task 3.3 (Documentation complete) ✅
-**Status:** Selected
+**Status:** Ready for next SELECT
 
-## Description
-
-Add production configuration to disable Swagger/OpenAPI endpoints and restrict CORS to specific origins. These are information disclosure vulnerabilities that must be fixed before any production deployment. Implement environment-based configuration so Swagger is enabled in development but disabled in production.
-
-## Next Step
-
-Run PLAN to generate an implementation-ready task PRD for this item.
+The previous task (5.1) has been completed and archived.
+Run SELECT command to choose the next task from Workplan.md

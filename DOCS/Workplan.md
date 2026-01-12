@@ -579,32 +579,33 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 
 ## Phase 5: Production Security Hardening & Deployment
 
-### Task 5.1: Disable Swagger and Configure CORS
+### Task 5.1: Disable Swagger and Configure CORS ✅ COMPLETED
 **Priority:** Critical (Blocking Production)
 **Dependencies:** Task 3.3 (Documentation complete)
 **References:** SECURITY_IMPLEMENTATION_SUMMARY.md, SECURITY_CHECKLIST.md
+**Completed:** 2026-01-13
 
 **Subtasks:**
-1. Add production configuration for Swagger:
-   - Create environment variable `SWAGGER_ENABLED` (default: false)
-   - Conditionally mount `/docs` and `/redoc` endpoints
-   - Set in production `.env`: `SWAGGER_ENABLED=false`
-2. Configure CORS allowlist:
-   - Replace `["*"]` wildcard with specific allowed origins
-   - Add environment variable `CORS_ORIGINS=["https://yourdomain.com"]`
-   - Test that requests from unauthorized origins are rejected (403)
-3. Create `.env.production` example file:
-   - Document all required environment variables
-   - Include security-specific settings
+1. ✅ Add production configuration for Swagger:
+   - ✅ Create environment variable `SWAGGER_ENABLED` (default: false)
+   - ✅ Conditionally mount `/docs` and `/redoc` endpoints
+   - ✅ Set in production `.env`: `SWAGGER_ENABLED=false`
+2. ✅ Configure CORS allowlist:
+   - ✅ Replace `["*"]` wildcard with specific allowed origins
+   - ✅ Add environment variable `CORS_ORIGINS=["https://yourdomain.com"]`
+   - ✅ Test that requests from unauthorized origins are rejected (403)
+3. ✅ Create `.env.production` example file:
+   - ✅ Document all required environment variables
+   - ✅ Include security-specific settings
 
 **Acceptance Criteria:**
-- [ ] Swagger is disabled in production config
-- [ ] CORS wildcard is removed
-- [ ] Unauthorized origins receive 403
-- [ ] `.env.production` documents all security settings
-- [ ] Verification step works: `curl http://localhost:8000/docs` → 404
+- [x] Swagger is disabled in production config
+- [x] CORS wildcard is removed
+- [x] Unauthorized origins receive 403
+- [x] `.env.production` documents all security settings
+- [x] Verification step works: `curl http://localhost:8000/docs` → 404
 
-**Estimated Time:** 1-2 hours
+**Estimated Time:** 1-2 hours (Actual: 2 hours)
 
 ---
 
