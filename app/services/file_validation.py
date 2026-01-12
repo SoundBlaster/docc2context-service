@@ -93,7 +93,7 @@ def sanitize_filename(filename: str) -> str:
 
     # Remove path components (handles both / and \)
     filename = os.path.basename(filename)
-    
+
     # Additional check: ensure no path separators remain
     if "/" in filename or "\\" in filename:
         logger.error(

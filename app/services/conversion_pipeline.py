@@ -52,7 +52,7 @@ class ConversionPipeline:
                 "Null byte detected in ZIP path",
                 extra={"original_path": path, "normalized": normalized},
             )
-            raise ValueError(f"Invalid path in ZIP archive: null byte detected")
+            raise ValueError("Invalid path in ZIP archive: null byte detected")
 
         # Construct the full path
         full_path = extract_path / normalized
@@ -65,7 +65,10 @@ class ConversionPipeline:
 
             # Check if the resolved path is within the extraction directory
             # This prevents Zip Slip attacks
-            if not str(resolved_path).startswith(str(resolved_extract) + os.sep) and resolved_path != resolved_extract:
+            if (
+                not str(resolved_path).startswith(str(resolved_extract) + os.sep)
+                and resolved_path != resolved_extract
+            ):
                 logger.error(
                     "Path traversal detected in ZIP archive",
                     extra={
@@ -88,7 +91,11 @@ class ConversionPipeline:
         if len(relative_parts) > MAX_EXTRACTION_DEPTH:
             logger.error(
                 "Excessive directory depth in ZIP archive",
-                extra={"path": path, "depth": len(relative_parts), "max_depth": MAX_EXTRACTION_DEPTH},
+                extra={
+                    "path": path,
+                    "depth": len(relative_parts),
+                    "max_depth": MAX_EXTRACTION_DEPTH,
+                },
             )
             raise ValueError(
                 f"Directory depth {len(relative_parts)} exceeds maximum {MAX_EXTRACTION_DEPTH}"

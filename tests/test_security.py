@@ -197,7 +197,7 @@ class TestDecompressionBombProtection:
                     # Note: The error might be raised during extraction, not validation
                     # Let's just verify the ZIP contains a .zip file
                     names = zf.namelist()
-                    assert any(name.endswith('.zip') for name in names)
+                    assert any(name.endswith(".zip") for name in names)
             finally:
                 os.unlink(temp_file.name)
 
@@ -217,9 +217,7 @@ class TestCommandInjectionProtection:
         ]
 
         for cmd in dangerous_commands:
-            assert not subprocess_manager.validate_command_safety(
-                cmd
-            ), f"Should block: {cmd}"
+            assert not subprocess_manager.validate_command_safety(cmd), f"Should block: {cmd}"
 
     def test_null_byte_in_command(self):
         """Test that null bytes in commands are blocked"""
@@ -251,9 +249,7 @@ class TestCommandInjectionProtection:
         ]
 
         for cmd in valid_commands:
-            assert subprocess_manager.validate_command_safety(
-                cmd
-            ), f"Should allow: {cmd}"
+            assert subprocess_manager.validate_command_safety(cmd), f"Should allow: {cmd}"
 
 
 class TestEnvironmentSanitization:
@@ -321,11 +317,10 @@ class TestEncryptedFileProtection:
         # This test verifies the logic exists in validate_zip_bomb_protection
         # The actual encryption flag detection happens during validation
         from app.services.file_validation import validate_zip_bomb_protection
-        
+
         # Create a mock to verify the check exists
         # In real use, encrypted ZIPs would have flag_bits & 0x1 set
         # Our validation code checks this and raises FileValidationError
-        
         # For now, just verify normal files pass
         with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
             try:
