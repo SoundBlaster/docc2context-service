@@ -1,31 +1,31 @@
-# Next Task: 5.4 — Implement Rate Limiting
+# Next Task: 5.6 — Security Testing in Staging
 
 **Source:** Workplan.md
-**Priority:** High (SHOULD-DO, first month)
+**Priority:** Critical (Before Production)
 **Phase:** 5
-**Effort:** 6-8 hours
-**Dependencies:** Task 5.2 (Monitoring complete) ✅
+**Effort:** 8-12 hours
+**Dependencies:** Task 5.1 ✅, Task 5.2 ✅, Task 5.3 ✅
 **Status:** Selected
 
 ## Description
 
-Implement rate limiting to prevent abuse and ensure fair resource utilization. Configure rate limit rules for the `/convert` endpoint and other API routes. Support multiple rate limiting strategies with graceful degradation.
+Run comprehensive security testing in staging environment to validate all security measures implemented in Tasks 5.1, 5.2, and 5.3. Execute security test suite, test resource limits under load, verify security checklist, and conduct internal security review.
 
 ## Key Requirements
 
-- `/convert` endpoint: 10 uploads/hour per IP
-- All endpoints: 100 requests/minute per IP
-- Internal IPs: Higher limits
-- Graceful degradation if Redis unavailable
-- Log rate limit triggers for investigation
+- Execute all 25 security tests in staging environment
+- Test resource limits (file size, batch uploads, memory/CPU monitoring)
+- Manually verify SECURITY_CHECKLIST.md items
+- Conduct internal security review with team member
+- Document all results and address any failures
 
 ## Acceptance Criteria
 
-- Rate limiting is enforced on all endpoints
-- Rate limits can be configured per endpoint/IP
-- Graceful degradation when backing store unavailable
-- Clear rate limit headers in responses
-- Rate limit events are logged for audit
+- All 25 security tests pass in staging
+- Resource limits work correctly under load
+- All SECURITY_CHECKLIST.md items are verified
+- Internal review is complete and documented
+- No blockers found (or documented and mitigated)
 
 ## Next Step
 
