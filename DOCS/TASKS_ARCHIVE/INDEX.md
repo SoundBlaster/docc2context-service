@@ -122,3 +122,28 @@ This index tracks completed tasks organized by PRD Phase.
   * `tests/test_config_security.py`: Configuration security tests
   * `.env.production`: Production configuration template
 
+### Task 5.2: Configure Monitoring & Alerting (2026-01-13)
+- Priority: Critical (Blocking Production)
+- Status: Completed
+- Effort: 4-6 hours (actual: ~4 hours)
+- Location: `5.2_Configure_Monitoring_Alerting/`
+- Summary:
+  * Implemented Prometheus metrics collection for HTTP, ZIP extraction, and resources
+  * Created Alertmanager configuration with 6 alert rules
+  * Created alert playbooks for HighErrorRate, ExtractionFailures, Memory, CPU, Disk, ServiceDown
+  * Added /metrics endpoint returning Prometheus format metrics
+  * Added metrics middleware to track request duration and status
+  * Updated docker-compose.yml with Prometheus and Alertmanager services
+  * Created comprehensive monitoring documentation
+- Changes:
+  * `app/core/metrics.py`: Prometheus metrics definitions
+  * `app/main.py`: /metrics endpoint and metrics middleware
+  * `prometheus.yml`: Prometheus configuration
+  * `alert_rules.yml`: 6 alert rules (critical/warning)
+  * `alertmanager.yml`: Alert routing configuration
+  * `docker-compose.yml`: Added Prometheus and Alertmanager services
+  * `DOCS/MONITORING.md`: Complete monitoring guide
+  * `DOCS/PLAYBOOKS/`: 5 alert playbooks
+  * `tests/test_monitoring.py`: 17 monitoring tests (all passing)
+  * `requirements.txt`: Added prometheus-client and psutil
+

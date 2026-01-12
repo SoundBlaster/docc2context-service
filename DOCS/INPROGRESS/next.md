@@ -1,4 +1,4 @@
-# Next Task: 5.2 — Configure Monitoring & Alerting
+# Next Task: 5.3 — Set Up Log Aggregation
 
 **Source:** Workplan.md
 **Priority:** Critical (Blocking Production)
@@ -9,7 +9,7 @@
 
 ## Description
 
-Set up metrics collection, alerting thresholds, and monitoring dashboards for the service. Configure alerts for error rates, extraction failures, rate limit triggers, and resource exhaustion. Create alerting playbooks documenting what each alert means and how to respond.
+Configure centralized log aggregation and set up log retention policies. Implement log search/analysis dashboards for extraction failures, anomalies, and performance issues. Ensure minimum 90 days retention for security events.
 
 ## Next Step
 
