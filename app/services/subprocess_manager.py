@@ -276,13 +276,10 @@ class SubprocessManager:
             dict: Sanitized environment variables
         """
         safe_env = {}
-        
+
         # Whitelist of safe environment variables
-        safe_keys = {
-            "PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ",
-            "TMPDIR", "TEMP", "TMP"
-        }
-        
+        safe_keys = {"PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ", "TMPDIR", "TEMP", "TMP"}
+
         for key, value in env.items():
             # Only allow whitelisted keys
             if key not in safe_keys:
@@ -291,7 +288,7 @@ class SubprocessManager:
                     extra={"key": key, "reason": "not in whitelist"},
                 )
                 continue
-            
+
             # Check for null bytes
             if "\x00" in key or "\x00" in value:
                 logger.warning(
@@ -299,7 +296,7 @@ class SubprocessManager:
                     extra={"key": key},
                 )
                 continue
-            
+
             # Limit value length to prevent memory exhaustion
             if len(value) > 4096:
                 logger.warning(
@@ -307,9 +304,9 @@ class SubprocessManager:
                     extra={"key": key, "length": len(value)},
                 )
                 continue
-            
+
             safe_env[key] = value
-        
+
         return safe_env
 
     def validate_command_safety(self, command: list[str]) -> bool:
@@ -334,7 +331,7 @@ class SubprocessManager:
                     extra={"command": command, "arg": repr(arg)},
                 )
                 return False
-            
+
             # Check argument length to prevent DoS
             if len(arg) > 4096:
                 logger.warning(
@@ -362,7 +359,7 @@ class SubprocessManager:
             # Validate input and output paths don't contain dangerous characters
             input_path = command[1]
             output_path = command[2]
-            
+
             # Check for command injection attempts
             dangerous_chars = [";", "&", "|", "`", "$", "(", ")", "<", ">", "\n", "\r"]
             for path in [input_path, output_path]:
@@ -372,9 +369,9 @@ class SubprocessManager:
                         extra={"path": path, "dangerous_chars": dangerous_chars},
                     )
                     return False
-            
+
             return True
-        
+
         # Pattern 2: docc2context --version or --help (info commands)
         if len(command) == 2 and command[1] in ["--version", "--help"]:
             return True
