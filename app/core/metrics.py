@@ -1,6 +1,6 @@
 """Prometheus metrics for DocC2Context Service monitoring"""
 
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 # HTTP Request Metrics
 request_count = Counter(

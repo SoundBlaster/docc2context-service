@@ -85,7 +85,7 @@ class SubprocessManager:
             },
         )
 
-        last_exception = None
+        last_exception: Exception | None = None
 
         for attempt in range(retries + 1):
             try:

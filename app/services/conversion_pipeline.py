@@ -400,9 +400,9 @@ This would normally contain the converted Markdown content from your DocC archiv
                 for file_path in markdown_files:
                     # Determine archive path
                     if base_path:
-                        archive_path = file_path.relative_to(base_path)
+                        archive_path: str | Path = file_path.relative_to(base_path)
                     else:
-                        archive_path = file_path.name
+                        archive_path = Path(file_path.name)
 
                     # Add file to ZIP
                     zip_file.write(file_path, archive_path)

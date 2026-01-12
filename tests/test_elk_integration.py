@@ -1,9 +1,10 @@
 """Tests for ELK Stack integration (Task 5.3)"""
 
-import os
-import pytest
 import json
+import os
 from pathlib import Path
+
+import pytest
 
 
 class TestELKConfiguration:

@@ -1,6 +1,7 @@
 """Configuration management using Pydantic Settings"""
 
 import json
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -54,9 +55,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
-        json_schema_extra={
-            "cors_origins": "Can be JSON array or comma-separated string"
-        }
+        json_schema_extra={"cors_origins": "Can be JSON array or comma-separated string"},
     )
 
     @field_validator("cors_origins", mode="before")
@@ -111,6 +110,7 @@ try:
 except Exception as e:
     # If settings creation fails, provide a helpful error message
     import sys
+
     print(f"ERROR: Failed to load settings: {e}", file=sys.stderr)
     # Create a dummy settings object so imports don't crash completely
     # This allows testing and debugging

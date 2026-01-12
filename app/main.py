@@ -1,19 +1,20 @@
 """FastAPI application entry point"""
 
 import time
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app.api.v1.endpoints import router as endpoints_router
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
-from app.core.security import SecurityMiddleware
 from app.core.metrics import request_count, request_duration
+from app.core.security import SecurityMiddleware
 
 # Setup logging
 setup_logging()
@@ -89,9 +90,7 @@ async def metrics_middleware(request: Request, call_next):
         duration = time.time() - start
 
         # Record metrics
-        request_count.labels(
-            method=method, endpoint=path, status=response.status_code
-        ).inc()
+        request_count.labels(method=method, endpoint=path, status=response.status_code).inc()
         request_duration.labels(method=method, endpoint=path).observe(duration)
 
         return response

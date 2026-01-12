@@ -1,11 +1,11 @@
 """Tests for structured logging (Task 5.3)"""
 
-import json
 import logging
-import pytest
 from io import StringIO
 
-from app.core.logging import StructuredLogger, get_logger, set_request_id, get_request_id
+import pytest
+
+from app.core.logging import StructuredLogger, get_logger, get_request_id, set_request_id
 
 
 class TestStructuredLogger:
@@ -164,7 +164,6 @@ class TestLoggingIntegration:
 
     def test_structured_logger_with_timestamps(self, logger_with_handler):
         """Test that timestamps are included in log output"""
-        from datetime import datetime
 
         test_logger, log_stream = logger_with_handler
 

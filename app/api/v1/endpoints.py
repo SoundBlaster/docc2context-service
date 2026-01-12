@@ -1,10 +1,11 @@
 """API v1 endpoints implementation"""
 
 import time
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile, Request
+
+from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.core.logging import get_logger, StructuredLogger, set_request_id
+from app.core.logging import StructuredLogger, get_logger, set_request_id
 from app.services.conversion_pipeline import conversion_pipeline
 from app.services.file_validation import validate_upload_file
 from app.services.health_service import health_service

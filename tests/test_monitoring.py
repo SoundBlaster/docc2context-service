@@ -1,7 +1,7 @@
 """Tests for monitoring and metrics (Task 5.2)"""
 
-import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -109,26 +109,31 @@ class TestMonitoringConfiguration:
     def test_prometheus_config_exists(self):
         """Test that prometheus.yml exists"""
         import os
+
         assert os.path.exists("prometheus.yml")
 
     def test_alertmanager_config_exists(self):
         """Test that alertmanager.yml exists"""
         import os
+
         assert os.path.exists("alertmanager.yml")
 
     def test_alert_rules_exist(self):
         """Test that alert_rules.yml exists"""
         import os
+
         assert os.path.exists("alert_rules.yml")
 
     def test_monitoring_docs_exist(self):
         """Test that monitoring documentation exists"""
         import os
+
         assert os.path.exists("DOCS/MONITORING.md")
 
     def test_playbooks_directory_exists(self):
         """Test that playbooks directory exists"""
         import os
+
         assert os.path.isdir("DOCS/PLAYBOOKS")
 
     def test_critical_playbooks_exist(self):
@@ -165,15 +170,15 @@ class TestPrometheusMetricsImport:
     def test_all_metric_types_defined(self):
         """Test that all required metrics are defined"""
         from app.core.metrics import (
-            request_count,
-            request_duration,
-            zip_extractions_total,
-            zip_extraction_duration,
-            extraction_file_count,
-            extraction_size_bytes,
             active_conversions,
             conversion_errors_total,
+            extraction_file_count,
+            extraction_size_bytes,
+            request_count,
+            request_duration,
             resource_usage,
+            zip_extraction_duration,
+            zip_extractions_total,
         )
 
         # All metrics should be defined and non-None
