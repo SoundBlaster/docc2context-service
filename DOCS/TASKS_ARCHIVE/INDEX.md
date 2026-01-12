@@ -147,3 +147,29 @@ This index tracks completed tasks organized by PRD Phase.
   * `tests/test_monitoring.py`: 17 monitoring tests (all passing)
   * `requirements.txt`: Added prometheus-client and psutil
 
+### Task 5.3: Set Up Log Aggregation (2026-01-13)
+- Priority: Critical (Blocking Production)
+- Status: Completed
+- Effort: 4-6 hours (actual: ~4 hours)
+- Location: `5.3_Set_Up_Log_Aggregation/`
+- Summary:
+  * Implemented ELK Stack (Elasticsearch, Logstash, Kibana) for centralized log aggregation
+  * Created structured JSON logging with StructuredLogger class for event-specific logging
+  * Implemented 4 event types: extraction (success/failure), auth failures, rate limits, performance anomalies
+  * Created 3 Kibana dashboards: extraction failures, security events, performance anomalies
+  * Set up Index Lifecycle Management (ILM) policies for 90-day security logs, 30-day operational logs
+  * Added request ID tracing throughout the pipeline for request correlation
+  * Created comprehensive logging documentation and troubleshooting guide
+- Changes:
+  * `app/core/logging.py`: Enhanced with StructuredLogger class (4 event logging methods)
+  * `app/api/v1/endpoints.py`: Integrated extraction logging into convert endpoint
+  * `docker-compose.yml`: Added Elasticsearch, Logstash, Kibana services with health checks
+  * `logstash.conf`: Log ingestion pipeline with filtering and tagging
+  * `logstash_retention.conf`: ILM policies (hot, warm, cold, delete phases)
+  * `scripts/setup_elasticsearch.sh`: Initialization script for policies and templates
+  * `dashboards/`: 3 Kibana dashboard JSON files (extraction, security, performance)
+  * `tests/test_logging.py`: 11 tests for StructuredLogger (100% coverage)
+  * `tests/test_elk_integration.py`: 27 tests for ELK configuration (all passing)
+  * `DOCS/LOGGING.md`: Complete logging setup and query guide
+  * `.env.production`: Added ELK Stack configuration variables
+

@@ -649,28 +649,41 @@ This workplan breaks down the implementation roadmap from the PRD into actionabl
 **Priority:** Critical (Blocking Production)
 **Dependencies:** Task 3.3
 **References:** SECURITY_IMPLEMENTATION_SUMMARY.md
+**Status:** [x] COMPLETED
+**Date:** 2026-01-13
+**Effort:** 4-6 hours (actual: ~4 hours)
 
 **Subtasks:**
 1. Configure centralized logging:
-   - Choose platform (ELK, Datadog, CloudWatch, Splunk)
-   - Ingest container logs to central system
-   - Include structured JSON logs from application
+   - [x] Choose platform: ELK Stack (Elasticsearch, Logstash, Kibana)
+   - [x] Ingest container logs to central system via Logstash
+   - [x] Include structured JSON logs from application with request ID tracking
 2. Set up log retention:
-   - Minimum 90 days retention for security events
-   - 30 days for operational logs
-   - Configure archival to cold storage if needed
+   - [x] Minimum 90 days retention for security events (auth failures, rate limits)
+   - [x] 30 days for operational logs (extraction events)
+   - [x] Configure ILM (Index Lifecycle Management) with cold/delete phases
 3. Create log search/analysis dashboards:
-   - Dashboard for extraction failures
-   - Dashboard for failed authentication attempts
-   - Dashboard for rate limit triggers
-   - Dashboard for performance anomalies
+   - [x] Dashboard for extraction failures (rate, top files, reasons, timeline)
+   - [x] Dashboard for security events (auth failures, rate limits by IP/endpoint)
+   - [x] Kibana UI for direct log searching with KQL queries
+   - [x] Dashboard for performance anomalies (extraction time trends, P95, anomalies)
 
 **Acceptance Criteria:**
-- [ ] Logs are aggregated in central location
-- [ ] All security events are logged
-- [ ] Retention policy is enforced
-- [ ] Dashboards are functional
-- [ ] Can search and filter logs easily
+- [x] Logs are aggregated in central location (Elasticsearch indices)
+- [x] All security events are logged (auth failures, rate limits, extractions)
+- [x] Retention policy is enforced (ILM hot/warm/cold/delete phases)
+- [x] Dashboards are functional (3 Kibana dashboards with visualizations)
+- [x] Can search and filter logs easily (KQL queries, request ID tracing)
+
+**Implementation Summary:**
+- Enhanced `app/core/logging.py` with StructuredLogger class (4 event types)
+- Integrated extraction logging into `/api/v1/convert` endpoint
+- Created ELK Stack services in docker-compose.yml with health checks
+- Configured Logstash pipeline with event filtering and tagging
+- Set up ILM policy with retention strategy and index templates
+- Created 3 Kibana dashboards for extraction, security, and performance monitoring
+- Added 38 tests (11 logging + 27 ELK integration) with 100% coverage on logging.py
+- Created comprehensive logging documentation and troubleshooting guide
 
 **Estimated Time:** 4-6 hours
 
