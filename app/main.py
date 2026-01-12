@@ -1,16 +1,19 @@
 """FastAPI application entry point"""
 
+import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from app.api.v1.endpoints import router as endpoints_router
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 from app.core.security import SecurityMiddleware
+from app.core.metrics import request_count, request_duration
 
 # Setup logging
 setup_logging()
@@ -62,6 +65,42 @@ async def root():
 async def health():
     """Basic health check endpoint"""
     return {"status": "healthy", "message": "DocC2Context Service is running"}
+
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint (Task 5.2)"""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    """Middleware to track HTTP request metrics (Task 5.2)"""
+    # Skip metrics endpoint itself to avoid recursion
+    if request.url.path == "/metrics":
+        return await call_next(request)
+
+    method = request.method
+    path = request.url.path
+    start = time.time()
+
+    try:
+        response = await call_next(request)
+        duration = time.time() - start
+
+        # Record metrics
+        request_count.labels(
+            method=method, endpoint=path, status=response.status_code
+        ).inc()
+        request_duration.labels(method=method, endpoint=path).observe(duration)
+
+        return response
+    except Exception as exc:
+        # Record error
+        request_count.labels(method=method, endpoint=path, status=500).inc()
+        duration = time.time() - start
+        request_duration.labels(method=method, endpoint=path).observe(duration)
+        raise
 
 
 @app.middleware("http")

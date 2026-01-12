@@ -1,0 +1,50 @@
+# Alertmanager configuration for DocC2Context Service (Task 5.2)
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+
+  routes:
+    # Critical alerts - these are sent with higher priority
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning'
+      repeat_interval: 4h
+
+receivers:
+  - name: 'default'
+    # Placeholder: configure actual receivers (Slack, email, PagerDuty, etc.)
+    # Example Slack config:
+    # slack_configs:
+    #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+    #     channel: '#alerts'
+    #     title: 'DocC2Context Alert: {{ .GroupLabels.alertname }}'
+    #     text: '{{ .CommonAnnotations.summary }}'
+
+  - name: 'critical'
+    # Critical alerts receiver
+    # slack_configs:
+    #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+    #     channel: '#critical-alerts'
+    #     title: 'CRITICAL: {{ .GroupLabels.alertname }}'
+    #     text: '{{ .CommonAnnotations.description }}'
+
+  - name: 'warning'
+    # Warning alerts receiver
+    # slack_configs:
+    #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+    #     channel: '#alerts'
+    #     title: 'WARNING: {{ .GroupLabels.alertname }}'
+    #     text: '{{ .CommonAnnotations.description }}'
