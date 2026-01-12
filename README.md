@@ -489,9 +489,11 @@ docker run --rm -v $(pwd):/app aquasec/trivy filesystem /app
 
 If you discover a security vulnerability:
 1. **DO NOT** open a public GitHub issue
-2. Email security@example.com (configure this for your deployment)
+2. Contact your organization's security team using your standard incident-reporting channel (for example, a monitored security email address or incident hotline)
 3. Include details of the vulnerability and steps to reproduce
 4. Allow time for patching before public disclosure
+
+> **TODO:** Configure the specific security contact information for your deployment before going to production.
 
 ## Documentation
 

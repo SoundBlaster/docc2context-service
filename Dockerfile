@@ -83,9 +83,9 @@ USER appuser
 # Expose FastAPI port
 EXPOSE 8000
 
-# Add healthcheck
+# Add healthcheck using Python (guaranteed to be available)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Security: Set resource limits and security options
 # These will be enforced by Docker runtime

@@ -20,7 +20,7 @@ services:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
-    read_only: false  # Set to true if application doesn't need write access to container filesystem
+    read_only: false  # Application requires write access (e.g., to /tmp for workspace creation). Do not set to true unless all write paths are moved to writable volumes/tmpfs and the application is updated accordingly.
     tmpfs:
       - /tmp:noexec,nosuid,nodev,size=1g
     # Resource limits to prevent DoS

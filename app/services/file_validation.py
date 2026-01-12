@@ -219,7 +219,9 @@ def validate_zip_bomb_protection(zip_file: zipfile.ZipFile, original_size: int) 
 
         # Check for symlinks in ZIP metadata
         # Symlink flag is 0xA000 in the upper 16 bits of external_attr (Unix)
-        if (file_info.external_attr >> 16) == 0xA000:
+        # Use bitmask to be more defensive against permission bit variations
+        file_type = (file_info.external_attr >> 16) & 0xF000
+        if file_type == 0xA000:
             logger.warning(
                 "Symlink detected in ZIP metadata",
                 extra={"zip_filename": file_info.filename},

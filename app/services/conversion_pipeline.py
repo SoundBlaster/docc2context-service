@@ -64,11 +64,12 @@ class ConversionPipeline:
             resolved_extract = extract_path.resolve()
 
             # Check if the resolved path is within the extraction directory
-            # This prevents Zip Slip attacks
-            if (
-                not str(resolved_path).startswith(str(resolved_extract) + os.sep)
-                and resolved_path != resolved_extract
-            ):
+            # This prevents Zip Slip attacks. Using is_relative_to() is more robust
+            # than string prefix matching (Python 3.9+)
+            try:
+                resolved_path.relative_to(resolved_extract)
+            except ValueError:
+                # Path is not relative to extract_path (path traversal detected)
                 logger.error(
                     "Path traversal detected in ZIP archive",
                     extra={

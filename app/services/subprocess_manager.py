@@ -8,6 +8,10 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+# Security constants for command validation
+MAX_ARGUMENT_LENGTH = 4096  # Maximum length for command arguments
+MAX_ENV_VALUE_LENGTH = 4096  # Maximum length for environment variable values
+
 
 class SubprocessResult:
     """Result of subprocess execution"""
@@ -298,7 +302,7 @@ class SubprocessManager:
                 continue
 
             # Limit value length to prevent memory exhaustion
-            if len(value) > 4096:
+            if len(value) > MAX_ENV_VALUE_LENGTH:
                 logger.warning(
                     "Environment variable value too long",
                     extra={"key": key, "length": len(value)},
@@ -332,8 +336,16 @@ class SubprocessManager:
                 )
                 return False
 
+            # Check for newline and carriage return to prevent argument splitting
+            if "\n" in arg or "\r" in arg:
+                logger.warning(
+                    "Newline or carriage return detected in command argument",
+                    extra={"command": command, "arg": repr(arg)},
+                )
+                return False
+
             # Check argument length to prevent DoS
-            if len(arg) > 4096:
+            if len(arg) > MAX_ARGUMENT_LENGTH:
                 logger.warning(
                     "Command argument too long",
                     extra={"command": command, "arg_length": len(arg)},

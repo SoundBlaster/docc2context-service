@@ -245,7 +245,9 @@ A: By default yes, but it should be disabled in production or moved to an authen
 
 ## Reporting Security Issues
 
-If you discover a security vulnerability, please email security@example.com (configure this).
+If you discover a security vulnerability, please contact your organization's security team using your standard incident-reporting channel (for example, a monitored security email address or internal incident-response system).
+
+> **TODO:** Replace this paragraph with the specific security contact information for your deployment (such as a monitored security email address or incident hotline) before going to production.
 
 **Do not** open a public GitHub issue for security vulnerabilities.
 

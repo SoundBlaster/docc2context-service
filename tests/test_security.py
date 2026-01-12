@@ -8,6 +8,7 @@ Tests for:
 - Resource exhaustion
 """
 
+import asyncio
 import io
 import os
 import tempfile
@@ -156,7 +157,7 @@ class TestDecompressionBombProtection:
                         validate_zip_bomb_protection(zf, file_size)
                     # Should hit file count limit before size limit
                     error_msg = str(exc_info.value).lower()
-                    assert "too many files" in error_msg or "exceeds limit" in error_msg
+                    assert "too many files" in error_msg
             finally:
                 os.unlink(temp_file.name)
 
@@ -180,7 +181,7 @@ class TestDecompressionBombProtection:
                 os.unlink(temp_file.name)
 
     def test_nested_zip_detection(self):
-        """Test that nested ZIP files are detected during validation"""
+        """Test that nested ZIP files are detected during extraction"""
         with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
             try:
                 # Create a nested ZIP
@@ -191,13 +192,21 @@ class TestDecompressionBombProtection:
                 with zipfile.ZipFile(temp_file, "w") as zf:
                     zf.writestr("nested.zip", inner_zip.getvalue())
 
+                # Verify the ZIP contains a nested ZIP file
                 with zipfile.ZipFile(temp_file.name, "r") as zf:
-                    file_size = os.path.getsize(temp_file.name)
-                    # Should detect nested ZIP (MAX_NESTED_ZIP_COUNT = 0)
-                    # Note: The error might be raised during extraction, not validation
-                    # Let's just verify the ZIP contains a .zip file
                     names = zf.namelist()
                     assert any(name.endswith(".zip") for name in names)
+
+                # Test that extraction blocks nested ZIPs
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with pytest.raises((ValueError, Exception)) as exc_info:
+                        # Extract the nested ZIP - should fail because nested ZIPs are not allowed
+                        asyncio.run(
+                            conversion_pipeline.extract_archive(Path(temp_file.name), Path(tmpdir))
+                        )
+                    # Verify the error is about nested ZIPs
+                    error_msg = str(exc_info.value).lower()
+                    assert "nested" in error_msg or "zip" in error_msg
             finally:
                 os.unlink(temp_file.name)
 
@@ -242,10 +251,12 @@ class TestCommandInjectionProtection:
 
     def test_valid_commands_allowed(self):
         """Test that valid commands are allowed"""
+        # Use the actual configured CLI path from subprocess_manager
+        cli_path = subprocess_manager.swift_cli_path
         valid_commands = [
-            ["docc2context", "input.zip", "output.md"],
-            ["docc2context", "--version"],
-            ["docc2context", "--help"],
+            [cli_path, "input.zip", "output.md"],
+            [cli_path, "--version"],
+            [cli_path, "--help"],
         ]
 
         for cmd in valid_commands:
@@ -371,3 +382,12 @@ class TestWorkspaceIsolation:
 
             # Extract
             files = await conversion_pipeline.extract_archive(archive_path, extract_path)
+
+            # Verify files have correct permissions (0o600 - owner read/write only)
+            for file_path in files:
+                stat_info = file_path.stat()
+                # Check that permissions are exactly 0o600 (owner read/write, no group/other access)
+                assert (stat_info.st_mode & 0o777) == 0o600, (
+                    f"File {file_path} has incorrect permissions: "
+                    f"{oct(stat_info.st_mode & 0o777)}, expected 0o600"
+                )
