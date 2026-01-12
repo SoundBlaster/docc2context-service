@@ -1,0 +1,106 @@
+{
+  "dashboard": {
+    "title": "Security Events",
+    "description": "Monitor authentication failures and rate limit triggers",
+    "panels": [
+      {
+        "id": "auth_failures_24h",
+        "title": "Failed Authentication Attempts (24h)",
+        "type": "metric",
+        "query": "event_type:auth_failure AND @timestamp:(now-24h TO now)",
+        "visualization": {
+          "metricType": "count",
+          "color": "red"
+        }
+      },
+      {
+        "id": "auth_failures_by_ip",
+        "title": "Failed Auth Attempts by IP",
+        "type": "table",
+        "query": "event_type:auth_failure",
+        "visualization": {
+          "columns": ["client_ip", "username", "reason", "doc_count"],
+          "sortBy": "doc_count",
+          "sortOrder": "desc",
+          "limit": 20
+        }
+      },
+      {
+        "id": "auth_failures_timeline",
+        "title": "Authentication Failures Over Time",
+        "type": "line",
+        "query": "event_type:auth_failure",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "doc_count",
+          "intervalAuto": true
+        }
+      },
+      {
+        "id": "rate_limit_24h",
+        "title": "Rate Limit Triggers (24h)",
+        "type": "metric",
+        "query": "event_type:rate_limit AND @timestamp:(now-24h TO now)",
+        "visualization": {
+          "metricType": "count",
+          "color": "orange"
+        }
+      },
+      {
+        "id": "rate_limits_by_endpoint",
+        "title": "Rate Limits by Endpoint",
+        "type": "bar",
+        "query": "event_type:rate_limit",
+        "visualization": {
+          "xAxisField": "endpoint",
+          "yAxisField": "doc_count",
+          "sortBy": "doc_count",
+          "sortOrder": "desc"
+        }
+      },
+      {
+        "id": "rate_limits_by_ip",
+        "title": "Top IPs Triggering Rate Limits",
+        "type": "table",
+        "query": "event_type:rate_limit",
+        "visualization": {
+          "columns": ["client_ip", "endpoint", "limit", "window", "doc_count"],
+          "sortBy": "doc_count",
+          "sortOrder": "desc",
+          "limit": 15
+        }
+      },
+      {
+        "id": "security_timeline",
+        "title": "All Security Events Timeline",
+        "type": "line",
+        "query": "event_type:(auth_failure OR rate_limit)",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "doc_count",
+          "groupBy": "event_type",
+          "intervalAuto": true
+        }
+      },
+      {
+        "id": "top_attackers",
+        "title": "Top Attack Sources (by event count)",
+        "type": "table",
+        "query": "event_type:(auth_failure OR rate_limit)",
+        "visualization": {
+          "columns": ["client_ip", "event_type", "doc_count"],
+          "sortBy": "doc_count",
+          "sortOrder": "desc",
+          "limit": 25
+        }
+      }
+    ],
+    "filters": [
+      {
+        "field": "event_type",
+        "value": ["auth_failure", "rate_limit"],
+        "operator": "is_any"
+      }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "dashboard": {
+    "title": "Extraction Failures",
+    "description": "Monitor and analyze file extraction failures",
+    "panels": [
+      {
+        "id": "failure_rate",
+        "title": "Failure Rate Over Time",
+        "type": "area",
+        "query": "event_type:extraction AND status:failure",
+        "timeRange": "last_24h",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "doc_count"
+        }
+      },
+      {
+        "id": "top_failures",
+        "title": "Top 10 Files by Failure Count",
+        "type": "table",
+        "query": "event_type:extraction AND status:failure",
+        "visualization": {
+          "columns": ["file_name", "error_message", "doc_count"],
+          "sortBy": "doc_count",
+          "sortOrder": "desc",
+          "limit": 10
+        }
+      },
+      {
+        "id": "failure_reasons",
+        "title": "Failure Reasons Distribution",
+        "type": "pie",
+        "query": "event_type:extraction AND status:failure",
+        "visualization": {
+          "groupBy": "error_message"
+        }
+      },
+      {
+        "id": "recent_failures",
+        "title": "Recent Failures (Last 1 hour)",
+        "type": "table",
+        "query": "event_type:extraction AND status:failure AND @timestamp:(now-1h TO now)",
+        "visualization": {
+          "columns": ["file_name", "error_message", "@timestamp", "request_id", "extraction_time_seconds"],
+          "sortBy": "@timestamp",
+          "sortOrder": "desc",
+          "limit": 20
+        }
+      },
+      {
+        "id": "extraction_time_histogram",
+        "title": "Failed Extraction Time Distribution",
+        "type": "histogram",
+        "query": "event_type:extraction AND status:failure",
+        "visualization": {
+          "xAxisField": "extraction_time_seconds",
+          "bucketSize": 1
+        }
+      },
+      {
+        "id": "failure_by_size",
+        "title": "Failures by File Size",
+        "type": "scatter",
+        "query": "event_type:extraction AND status:failure",
+        "visualization": {
+          "xAxisField": "file_size_bytes",
+          "yAxisField": "extraction_time_seconds"
+        }
+      }
+    ],
+    "filters": [
+      {
+        "field": "event_type",
+        "value": "extraction",
+        "operator": "is"
+      },
+      {
+        "field": "status",
+        "value": "failure",
+        "operator": "is"
+      }
+    ]
+  }
+}
