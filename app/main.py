@@ -15,9 +15,14 @@ from app.core.security import SecurityMiddleware
 # Setup logging
 setup_logging()
 
-# Create FastAPI app
+# Create FastAPI app with conditional Swagger/docs (Task 5.1)
 app = FastAPI(
-    title=settings.app_name, description=settings.app_description, version=settings.app_version
+    title=settings.app_name,
+    description=settings.app_description,
+    version=settings.app_version,
+    docs_url="/docs" if settings.swagger_enabled else None,
+    redoc_url="/redoc" if settings.swagger_enabled else None,
+    openapi_url="/openapi.json" if settings.swagger_enabled else None,
 )
 
 # Add security middleware

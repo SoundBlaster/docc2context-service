@@ -1,15 +1,15 @@
-# Next Task: 4.3 — Deployment Quality Gates
+# Next Task: 5.1 — Disable Swagger and Configure CORS
 
 **Source:** Workplan.md
-**Priority:** High
-**Phase:** 4
-**Effort:** 6-8 hours
-**Dependencies:** Task 3.3 (Documentation & Deployment)
+**Priority:** Critical (Blocking Production)
+**Phase:** 5
+**Effort:** 1-2 hours
+**Dependencies:** Task 3.3 (Documentation complete) ✅
 **Status:** Selected
 
 ## Description
 
-Create deployment validation scripts to verify Docker image builds, test container functionality, run smoke tests, and perform security checks. Implement deployment rollback procedures and ensure all quality gates pass before production deployment.
+Add production configuration to disable Swagger/OpenAPI endpoints and restrict CORS to specific origins. These are information disclosure vulnerabilities that must be fixed before any production deployment. Implement environment-based configuration so Swagger is enabled in development but disabled in production.
 
 ## Next Step
 

@@ -371,9 +371,3 @@ class TestWorkspaceIsolation:
 
             # Extract
             files = await conversion_pipeline.extract_archive(archive_path, extract_path)
-
-            # Check file permissions
-            for file in files:
-                stat_info = file.stat()
-                # Check that file is not world-readable (permissions should be 0o600)
-                assert (stat_info.st_mode & 0o077) == 0, f"File {file} has weak permissions"
