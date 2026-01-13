@@ -354,31 +354,32 @@ This would normally contain the converted Markdown content from your DocC archiv
                 # Re-raise other exceptions
                 raise
 
-    async def collect_markdown_files(self, workspace: Path) -> list[Path]:
+    async def collect_markdown_files(self, output_dir: Path) -> list[Path]:
         """
-        Collect all generated Markdown files from workspace
+        Collect all generated Markdown files from conversion output directory
 
         Args:
-            workspace: Workspace directory to search
+            output_dir: Conversion output directory to search
 
         Returns:
             List[Path]: List of Markdown files found
         """
-        logger.info("Collecting Markdown files from workspace", extra={"workspace": str(workspace)})
+        logger.info("Collecting Markdown files from output directory", extra={"output_dir": str(output_dir)})
 
         markdown_files = []
 
-        # Search for Markdown files recursively
-        for file_path in workspace.rglob("*"):
-            if file_path.is_file() and file_path.suffix.lower() in self.supported_extensions:
-                markdown_files.append(file_path)
+        # Search for Markdown files recursively only in output directory
+        if output_dir.exists():
+            for file_path in output_dir.rglob("*"):
+                if file_path.is_file() and file_path.suffix.lower() in self.supported_extensions:
+                    markdown_files.append(file_path)
 
         logger.info(
             "Markdown files collected",
             extra={
-                "workspace": str(workspace),
+                "output_dir": str(output_dir),
                 "file_count": len(markdown_files),
-                "files": [str(f.relative_to(workspace)) for f in markdown_files],
+                "files": [str(f.relative_to(output_dir)) for f in markdown_files],
             },
         )
 
@@ -541,53 +542,7 @@ This would normally contain the converted Markdown content from your DocC archiv
                 },
             )
 
-            # Step 3: Create Info.plist if missing (workaround for Docker build issue)
-            # The Docker-compiled docc2context requires Info.plist, but the release binary doesn't
-            # Since we have metadata.json, we can create a minimal Info.plist
-            info_plist_path = docc_input_path / "Info.plist"
-            if not info_plist_path.exists():
-                logger.info(
-                    "Creating Info.plist from metadata.json (Docker build workaround)",
-                    extra={"bundle_path": str(docc_input_path)},
-                )
-                metadata_path = docc_input_path / "metadata.json"
-                if metadata_path.exists():
-                    try:
-                        import json as json_module
-                        with open(metadata_path, "r") as f:
-                            metadata = json_module.load(f)
-
-                        # Create a minimal plist file as XML (works without plistlib)
-                        bundle_id = metadata.get("bundleID", "documentation").replace('"', '\\"')
-                        bundle_name = metadata.get("bundleDisplayName", "Documentation").replace('"', '\\"')
-
-                        plist_content = f'''<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Identifier</key>
-	<string>{bundle_id}</string>
-	<key>DisplayName</key>
-	<string>{bundle_name}</string>
-	<key>Version</key>
-	<string>1.0</string>
-</dict>
-</plist>'''
-
-                        with open(info_plist_path, "w") as f:
-                            f.write(plist_content)
-
-                        logger.info(
-                            "Created Info.plist successfully",
-                            extra={"path": str(info_plist_path)},
-                        )
-                    except Exception as e:
-                        logger.warning(
-                            "Failed to create Info.plist, continuing anyway",
-                            extra={"error": str(e)},
-                        )
-
-            # Step 4: Convert using Swift CLI
+            # Step 3: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
             # docc2context expects a directory containing a DocC bundle
             # Don't create the directory - docc2context will create it with --force flag
@@ -598,13 +553,14 @@ This would normally contain the converted Markdown content from your DocC archiv
                 timeout=timeout,
             )
 
-            # Step 5: Collect all Markdown files
-            markdown_files = await self.collect_markdown_files(workspace)
+            # Step 5: Collect all Markdown files from conversion output
+            output_md_dir = workspace / "converted_output"
+            markdown_files = await self.collect_markdown_files(output_md_dir)
 
-            # Step 5: Create output ZIP
+            # Step 6: Create output ZIP
             output_zip_path = workspace / "output.zip"
             await self.create_output_zip(
-                markdown_files=markdown_files, output_zip_path=output_zip_path, base_path=workspace
+                markdown_files=markdown_files, output_zip_path=output_zip_path, base_path=output_md_dir
             )
 
             logger.info(
