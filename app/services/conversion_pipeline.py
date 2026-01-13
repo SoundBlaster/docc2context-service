@@ -465,29 +465,47 @@ This would normally contain the converted Markdown content from your DocC archiv
             extract_path = workspace / "extracted"
             await self.extract_archive(input_zip_path, extract_path)
 
-            # Step 2: The extracted directory itself is the DocC bundle
-            # docc2context expects the directory containing Info.plist and other bundle files
+            # Step 2: Find the actual DocC bundle directory
+            # Per docc2context manual: input must be a directory containing Info.plist
+            # The ZIP may extract to:
+            # Case 1: /extracted/Info.plist (bundle at root)
+            # Case 2: /extracted/SomeName.doccarchive/Info.plist (bundle in subdirectory)
+
             docc_input_path = extract_path
 
-            # Debug: List what was extracted
-            extracted_contents = []
-            extracted_subdirs = []
-            for item in extract_path.iterdir():
-                if item.is_dir():
-                    extracted_subdirs.append(item.name)
-                else:
-                    extracted_contents.append(item.name)
+            # Check if extracted directory contains a .doccarchive subdirectory
+            doccarchive_dirs = list(extract_path.glob("*.doccarchive"))
 
-            logger.info(
-                "Using extracted directory as DocC input",
-                extra={
-                    "input_path": str(docc_input_path),
-                    "request_id": str(workspace.name),
-                    "files_at_root": extracted_contents[:10],  # First 10 files
-                    "subdirs": extracted_subdirs,
-                    "has_info_plist": "Info.plist" in extracted_contents,
-                },
-            )
+            if len(doccarchive_dirs) > 0:
+                # ZIP contained .doccarchive subdirectory, use it
+                docc_input_path = doccarchive_dirs[0]
+                logger.info(
+                    "Found .doccarchive subdirectory in extraction",
+                    extra={
+                        "bundle_path": str(docc_input_path),
+                        "bundle_name": docc_input_path.name,
+                    },
+                )
+            else:
+                # Bundle is at root of extraction
+                logger.info(
+                    "Using extracted directory as bundle",
+                    extra={
+                        "bundle_path": str(docc_input_path),
+                    },
+                )
+
+            # Debug: Verify Info.plist exists at the intended location
+            info_plist = docc_input_path / "Info.plist"
+            if not info_plist.exists():
+                logger.error(
+                    "Info.plist not found in bundle directory",
+                    extra={
+                        "bundle_path": str(docc_input_path),
+                        "files_in_bundle": list(docc_input_path.glob("*"))[:10],
+                    },
+                )
+                raise RuntimeError(f"Invalid DocC bundle: Info.plist not found at {info_plist}")
 
             # Step 3: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
