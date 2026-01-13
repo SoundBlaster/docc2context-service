@@ -565,11 +565,11 @@ This would normally contain the converted Markdown content from your DocC archiv
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleIdentifier</key>
+	<key>Identifier</key>
 	<string>{bundle_id}</string>
-	<key>CFBundleDisplayName</key>
+	<key>DisplayName</key>
 	<string>{bundle_name}</string>
-	<key>CFBundleVersion</key>
+	<key>Version</key>
 	<string>1.0</string>
 </dict>
 </plist>'''
