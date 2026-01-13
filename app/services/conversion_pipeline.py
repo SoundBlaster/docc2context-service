@@ -465,7 +465,7 @@ This would normally contain the converted Markdown content from your DocC archiv
 
             # Step 2: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
-            output_md_dir.mkdir(parents=True, exist_ok=True)
+            # Don't create the directory - docc2context will create it with --force flag
             await self.convert_with_swift_cli(
                 input_path=input_zip_path,
                 output_path=output_md_dir,

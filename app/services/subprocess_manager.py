@@ -233,7 +233,7 @@ class SubprocessManager:
         Returns:
             SubprocessResult: Conversion result
         """
-        command = [self.swift_cli_path, str(input_path), "--output", str(output_path)]
+        command = [self.swift_cli_path, str(input_path), "--output", str(output_path), "--force"]
 
         logger.info(
             "Starting DocC to Markdown conversion",
@@ -366,8 +366,8 @@ class SubprocessManager:
             return False
 
         # For Swift CLI, allow specific patterns
-        # Pattern 1: docc2context input.zip --output output_dir (conversion with --output flag)
-        if len(command) == 4 and command[2] == "--output":
+        # Pattern 1: docc2context input.zip --output output_dir [--force] (conversion with --output flag)
+        if len(command) >= 4 and command[2] == "--output":
             # Validate input and output paths don't contain dangerous characters
             input_path = command[1]
             output_path = command[3]
@@ -381,6 +381,17 @@ class SubprocessManager:
                         extra={"path": path, "dangerous_chars": dangerous_chars},
                     )
                     return False
+
+            # Allow optional flags after --output path
+            if len(command) > 4:
+                allowed_flags = {"--force", "--format", "--technology"}
+                for arg in command[4:]:
+                    if arg.startswith("-") and arg not in allowed_flags:
+                        logger.warning(
+                            "Disallowed flag detected",
+                            extra={"flag": arg, "allowed_flags": allowed_flags},
+                        )
+                        return False
 
             return True
 
