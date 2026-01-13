@@ -13,6 +13,9 @@ services:
     volumes:
       # Mount source code for development (optional)
       - ./app:/app/app
+      # Mount environment configuration
+      - ./.env:/app/.env:ro
+      - ./logstash.conf:/app/logstash.conf:ro
     # Security hardening options
     security_opt:
       - no-new-privileges:true
@@ -107,7 +110,7 @@ services:
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - LS_JAVA_OPTS=-Xmx256m -Xms256m
     depends_on:

@@ -226,14 +226,14 @@ class SubprocessManager:
 
         Args:
             input_path: Path to input ZIP file
-            output_path: Path for output Markdown file
+            output_path: Path for output directory (not file)
             workspace: Working directory for conversion
             timeout: Custom timeout for conversion
 
         Returns:
             SubprocessResult: Conversion result
         """
-        command = [self.swift_cli_path, str(input_path), str(output_path)]
+        command = [self.swift_cli_path, str(input_path), "--output", str(output_path)]
 
         logger.info(
             "Starting DocC to Markdown conversion",
@@ -366,11 +366,11 @@ class SubprocessManager:
             return False
 
         # For Swift CLI, allow specific patterns
-        # Pattern 1: docc2context input.zip output.md (conversion)
-        if len(command) == 3:
+        # Pattern 1: docc2context input.zip --output output_dir (conversion with --output flag)
+        if len(command) == 4 and command[2] == "--output":
             # Validate input and output paths don't contain dangerous characters
             input_path = command[1]
-            output_path = command[2]
+            output_path = command[3]
 
             # Check for command injection attempts
             dangerous_chars = [";", "&", "|", "`", "$", "(", ")", "<", ">", "\n", "\r"]

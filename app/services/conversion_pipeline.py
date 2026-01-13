@@ -272,20 +272,29 @@ class ConversionPipeline:
                 )
                 raise RuntimeError(f"Conversion failed: {conversion_result.stderr}")
 
-            # Check if output file was created
-            if not output_path.exists():
+            # Check if output directory was created and contains files
+            if not output_path.is_dir():
                 logger.error(
-                    "Conversion completed but no output file found",
+                    "Conversion completed but output directory not found",
                     extra={"input_path": str(input_path), "expected_output": str(output_path)},
                 )
-                raise RuntimeError("Conversion completed but no output file was generated")
+                raise RuntimeError("Conversion completed but no output directory was generated")
+
+            # Check if output directory contains any markdown or generated files
+            output_files = list(output_path.glob("**/*"))
+            if not output_files:
+                logger.error(
+                    "Conversion completed but output directory is empty",
+                    extra={"input_path": str(input_path), "output_path": str(output_path)},
+                )
+                raise RuntimeError("Conversion completed but output directory is empty")
 
             logger.info(
                 "Swift CLI conversion completed successfully",
                 extra={
                     "input_path": str(input_path),
                     "output_path": str(output_path),
-                    "output_size": output_path.stat().st_size,
+                    "output_file_count": len(output_files),
                     "stdout": conversion_result.stdout,
                 },
             )
@@ -455,10 +464,11 @@ This would normally contain the converted Markdown content from your DocC archiv
             await self.extract_archive(input_zip_path, extract_path)
 
             # Step 2: Convert using Swift CLI
-            output_md_path = workspace / "converted.md"
+            output_md_dir = workspace / "converted_output"
+            output_md_dir.mkdir(parents=True, exist_ok=True)
             await self.convert_with_swift_cli(
                 input_path=input_zip_path,
-                output_path=output_md_path,
+                output_path=output_md_dir,
                 workspace=workspace,
                 timeout=timeout,
             )

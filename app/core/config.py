@@ -58,10 +58,10 @@ class Settings(BaseSettings):
         json_schema_extra={"cors_origins": "Can be JSON array or comma-separated string"},
     )
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("allowed_hosts", "cors_origins", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v):
-        """Parse CORS origins from JSON array or comma-separated string"""
+    def parse_list_fields(cls, v):
+        """Parse list fields from JSON array or comma-separated string"""
         if isinstance(v, list):
             return v
 
@@ -71,9 +71,9 @@ class Settings(BaseSettings):
                 try:
                     return json.loads(v)
                 except json.JSONDecodeError:
-                    raise ValueError(f"Invalid JSON for CORS_ORIGINS: {v}")
-            else:  # Comma-separated format
-                return [origin.strip() for origin in v.split(",") if origin.strip()]
+                    raise ValueError(f"Invalid JSON for list field: {v}")
+            else:  # Comma-separated format or single value
+                return [item.strip() for item in v.split(",") if item.strip()]
         return v
 
     @field_validator("swagger_enabled", "cors_origins", mode="after")
