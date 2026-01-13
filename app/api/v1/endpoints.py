@@ -1,11 +1,12 @@
 """API v1 endpoints implementation"""
 
+import io
 import os
 import time
 import uuid
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.core.logging import StructuredLogger, get_logger, set_request_id
 from app.services.conversion_pipeline import conversion_pipeline
@@ -157,21 +158,18 @@ async def convert_file(file: UploadFile = File(...), request: Request = None):
                     input_zip_path=file_path, workspace=workspace
                 )
 
-                # Copy output ZIP to a temporary location BEFORE workspace cleanup
-                # This ensures the file persists after workspace deletion
-                import tempfile
-                from pathlib import Path as PathlibPath
+                # Read the ZIP file content into memory
+                # This happens BEFORE workspace cleanup to ensure file is available
+                with open(output_zip_path, "rb") as zip_file:
+                    zip_content = zip_file.read()
 
-                temp_dir = PathlibPath(tempfile.gettempdir()) / "docc2context-responses"
-                temp_dir.mkdir(exist_ok=True)
-
-                # Create unique temporary file with same extension
-                temp_output = temp_dir / f"{uuid.uuid4()}_output.zip"
-
-                # Copy the file
-                with open(output_zip_path, "rb") as src:
-                    with open(temp_output, "wb") as dst:
-                        dst.write(src.read())
+                logger.info(
+                    "ZIP file read successfully",
+                    extra={
+                        "output_zip_path": str(output_zip_path),
+                        "zip_size": len(zip_content),
+                    },
+                )
 
                 # Log successful extraction (Task 5.3)
                 extraction_time = time.time() - extraction_start_time
@@ -183,24 +181,30 @@ async def convert_file(file: UploadFile = File(...), request: Request = None):
                     request_id=request_id,
                 )
 
-                # Create streaming response with ZIP file
+                # Create streaming response with ZIP content
                 zip_filename = safe_filename.replace(".zip", "_converted.zip")
-
-                from fastapi.responses import FileResponse
 
                 logger.info(
                     "Sending converted ZIP file",
                     extra={
-                        "temp_output_path": str(temp_output),
                         "zip_filename": zip_filename,
-                        "temp_file_size": temp_output.stat().st_size,
+                        "zip_size": len(zip_content),
+                        "content_length": len(zip_content),
                     },
                 )
 
-                return FileResponse(
-                    path=temp_output,
+                # Use StreamingResponse for proper binary handling
+                # This avoids any encoding/decoding issues with Response class
+                def generate_zip():
+                    yield zip_content
+
+                return StreamingResponse(
+                    generate_zip(),
                     media_type="application/zip",
-                    filename=zip_filename,
+                    headers={
+                        "Content-Disposition": f'attachment; filename="{zip_filename}"',
+                        "Content-Length": str(len(zip_content)),
+                    },
                 )
 
             except Exception as conversion_error:
