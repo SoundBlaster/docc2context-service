@@ -469,11 +469,23 @@ This would normally contain the converted Markdown content from your DocC archiv
             # docc2context expects the directory containing Info.plist and other bundle files
             docc_input_path = extract_path
 
+            # Debug: List what was extracted
+            extracted_contents = []
+            extracted_subdirs = []
+            for item in extract_path.iterdir():
+                if item.is_dir():
+                    extracted_subdirs.append(item.name)
+                else:
+                    extracted_contents.append(item.name)
+
             logger.info(
                 "Using extracted directory as DocC input",
                 extra={
                     "input_path": str(docc_input_path),
                     "request_id": str(workspace.name),
+                    "files_at_root": extracted_contents[:10],  # First 10 files
+                    "subdirs": extracted_subdirs,
+                    "has_info_plist": "Info.plist" in extracted_contents,
                 },
             )
 
