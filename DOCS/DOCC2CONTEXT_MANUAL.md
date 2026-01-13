@@ -121,3 +121,51 @@ sudo mv docc2context /usr/local/bin/
 curl -L https://github.com/SoundBlaster/docc2context/releases/download/v<version>/docc2context-<version>-linux-x86_64.tar.gz | tar xz
 sudo mv docc2context /usr/local/bin/
 ```
+
+## How to test
+
+```zsh
+⏺ Bash(swift build -c release 2>&1 | head -50)
+  ⎿  [0/1] Planning build
+     [1/1] Compiling plugin Swift-DocC Preview
+     [2/2] Compiling plugin Swift-DocC
+     … +12 lines (ctrl+o to expand)
+```
+
+⏺ Now let me test the release app with the available DocC archive:
+
+```zsh
+⏺ Bash(./.build/release/docc2context DOCS/INPROGRESS/SpecificationCore.doccarchive --output /tmp/test_release_output 2>&1)
+  ⎿  Generated 0 tutorial volume(s), 0 chapter(s), 27 reference article(s), and 455 symbol(s) into /tmp/test_release_output.
+```
+
+⏺ Perfect! The release app built successfully and processed the archive. Let me verify the output:
+
+```zsh
+⏺ Bash(ls -lah /tmp/test_release_output/ && echo -e "\n=== Generated Files ===" && find /tmp/test_release_output -type f | head -20)
+  ⎿  total 0
+     drwxr-xr-x@  4 egor  wheel   128B Jan 13 09:45 .
+     drwxrwxrwt  10 root  wheel   320B Jan 13 09:45 ..
+     … +24 lines (ctrl+o to expand)
+
+⏺ Bash(ls -lah /tmp/test_release_output/linkgraph/ && echo -e "\n=== Link Graph Sample ===" && head -50
+      /tmp/test_release_output/linkgraph/adjacency.json)
+  ⎿  total 112
+     drwxr-xr-x@ 3 egor  wheel    96B Jan 13 09:45 .
+     drwxr-xr-x@ 4 egor  wheel   128B Jan 13 09:45 ..
+     … +54 lines (ctrl+o to expand)
+```
+
+### ⏺ ✅ Release App Test Successful
+
+  The release app (docc2context) successfully processed DOCS/INPROGRESS/SpecificationCore.doccarchive:
+
+  Output Summary:
+  - Tutorials: 0
+  - Chapters: 0
+  - Reference Articles: 27
+  - Symbols: 455
+
+  Generated Files:
+  - markdown/documentation/ - 455+ markdown files with API documentation
+  - linkgraph/adjacency.json - 54KB link graph for LLM context generation

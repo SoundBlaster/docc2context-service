@@ -22,13 +22,11 @@ RUN apt-get update && \
     libz-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone the docc2context repository and checkout a stable version
+# Clone and build docc2context
 WORKDIR /build
-RUN git clone https://github.com/SoundBlaster/docc2context.git
-
-# Build the Swift CLI binary
-WORKDIR /build/docc2context
-RUN swift build -c release
+RUN git clone https://github.com/SoundBlaster/docc2context.git && \
+    cd docc2context && \
+    swift build -c release
 
 # Stage 3: Final stage - Python with Swift runtime support
 FROM python:3.10-slim

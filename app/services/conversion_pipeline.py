@@ -520,15 +520,74 @@ This would normally contain the converted Markdown content from your DocC archiv
 
             # Also log the parent directory to understand structure
             parent_items = list(docc_input_path.parent.glob("*"))
+            parent_item_details = {}
+            for p in parent_items[:10]:  # First 10 items
+                try:
+                    parent_item_details[p.name] = {
+                        "is_dir": p.is_dir(),
+                        "is_file": p.is_file(),
+                        "is_symlink": p.is_symlink(),
+                        "size": p.stat().st_size if p.is_file() else 0,
+                    }
+                except Exception as e:
+                    parent_item_details[p.name] = {"error": str(e)}
+
             logger.info(
                 "Parent directory contents",
                 extra={
                     "parent_path": str(docc_input_path.parent),
-                    "items": [p.name for p in parent_items],
+                    "total_items": len(parent_items),
+                    "first_10_items": parent_item_details,
                 },
             )
 
-            # Step 3: Convert using Swift CLI
+            # Step 3: Create Info.plist if missing (workaround for Docker build issue)
+            # The Docker-compiled docc2context requires Info.plist, but the release binary doesn't
+            # Since we have metadata.json, we can create a minimal Info.plist
+            info_plist_path = docc_input_path / "Info.plist"
+            if not info_plist_path.exists():
+                logger.info(
+                    "Creating Info.plist from metadata.json (Docker build workaround)",
+                    extra={"bundle_path": str(docc_input_path)},
+                )
+                metadata_path = docc_input_path / "metadata.json"
+                if metadata_path.exists():
+                    try:
+                        import json as json_module
+                        with open(metadata_path, "r") as f:
+                            metadata = json_module.load(f)
+
+                        # Create a minimal plist file as XML (works without plistlib)
+                        bundle_id = metadata.get("bundleID", "documentation").replace('"', '\\"')
+                        bundle_name = metadata.get("bundleDisplayName", "Documentation").replace('"', '\\"')
+
+                        plist_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>{bundle_id}</string>
+	<key>CFBundleDisplayName</key>
+	<string>{bundle_name}</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+</dict>
+</plist>'''
+
+                        with open(info_plist_path, "w") as f:
+                            f.write(plist_content)
+
+                        logger.info(
+                            "Created Info.plist successfully",
+                            extra={"path": str(info_plist_path)},
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            "Failed to create Info.plist, continuing anyway",
+                            extra={"error": str(e)},
+                        )
+
+            # Step 4: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
             # docc2context expects a directory containing a DocC bundle
             # Don't create the directory - docc2context will create it with --force flag
@@ -539,7 +598,7 @@ This would normally contain the converted Markdown content from your DocC archiv
                 timeout=timeout,
             )
 
-            # Step 4: Collect all Markdown files
+            # Step 5: Collect all Markdown files
             markdown_files = await self.collect_markdown_files(workspace)
 
             # Step 5: Create output ZIP
