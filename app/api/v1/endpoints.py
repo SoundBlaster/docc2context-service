@@ -1,5 +1,6 @@
 """API v1 endpoints implementation"""
 
+import os
 import time
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
@@ -249,3 +250,57 @@ async def convert_file(file: UploadFile = File(...), request: Request = None):
             raise HTTPException(
                 status_code=500, detail="Internal server error during file processing"
             )
+
+
+@router.get("/debug/docc2context")
+async def debug_docc2context():
+    """
+    Debug endpoint to test docc2context binary availability and functionality
+
+    Returns diagnostic information about the docc2context binary setup
+    """
+    from pathlib import Path
+    from app.core.config import settings
+    from app.services.subprocess_manager import subprocess_manager
+
+    debug_info = {
+        "binary_path": settings.swift_cli_path,
+        "binary_exists": False,
+        "binary_executable": False,
+        "version_check": None,
+        "version_stdout": None,
+        "version_stderr": None,
+        "version_returncode": None,
+    }
+
+    try:
+        swift_path = Path(settings.swift_cli_path)
+        debug_info["binary_exists"] = swift_path.exists()
+        debug_info["binary_executable"] = os.access(settings.swift_cli_path, os.X_OK)
+
+        # Try to check version
+        result = await subprocess_manager.check_swift_binary()
+        debug_info["version_check"] = result.success
+        debug_info["version_stdout"] = result.stdout[:500] if result.stdout else None
+        debug_info["version_stderr"] = result.stderr[:500] if result.stderr else None
+        debug_info["version_returncode"] = result.returncode
+
+        logger.info(
+            "Debug endpoint called - docc2context info",
+            extra=debug_info
+        )
+
+        return JSONResponse(
+            status_code=200,
+            content=debug_info
+        )
+    except Exception as e:
+        debug_info["error"] = str(e)
+        logger.error(
+            "Debug endpoint error",
+            extra=debug_info
+        )
+        return JSONResponse(
+            status_code=500,
+            content=debug_info
+        )

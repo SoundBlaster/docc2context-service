@@ -208,10 +208,10 @@ class SubprocessManager:
         Check if Swift CLI binary is available and working
 
         Returns:
-            SubprocessResult: Result of version check
+            SubprocessResult: Result of help check (docc2context doesn't support --version)
         """
         try:
-            return await self.execute_command([self.swift_cli_path, "--version"])
+            return await self.execute_command([self.swift_cli_path, "--help"])
         except Exception as e:
             logger.error(
                 "Swift CLI binary check failed",
@@ -396,8 +396,8 @@ class SubprocessManager:
 
             return True
 
-        # Pattern 2: docc2context --version or --help (info commands)
-        if len(command) == 2 and command[1] in ["--version", "--help"]:
+        # Pattern 2: docc2context --help or -h (info commands)
+        if len(command) == 2 and command[1] in ["--help", "-h"]:
             return True
 
         logger.warning(
