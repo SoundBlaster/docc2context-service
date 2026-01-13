@@ -497,15 +497,34 @@ This would normally contain the converted Markdown content from your DocC archiv
 
             # Log what was found in bundle directory
             bundle_contents = []
+            bundle_details = {}
             for item in sorted(docc_input_path.iterdir())[:20]:
                 bundle_contents.append(item.name)
+                bundle_details[item.name] = {
+                    "is_dir": item.is_dir(),
+                    "exists": item.exists(),
+                    "size": item.stat().st_size if item.is_file() else 0,
+                }
 
             logger.info(
                 "Bundle directory contents",
                 extra={
                     "bundle_path": str(docc_input_path),
+                    "bundle_path_exists": docc_input_path.exists(),
+                    "bundle_path_is_dir": docc_input_path.is_dir(),
                     "items": bundle_contents,
                     "has_info_plist": (docc_input_path / "Info.plist").exists(),
+                    "has_metadata_json": (docc_input_path / "metadata.json").exists(),
+                },
+            )
+
+            # Also log the parent directory to understand structure
+            parent_items = list(docc_input_path.parent.glob("*"))
+            logger.info(
+                "Parent directory contents",
+                extra={
+                    "parent_path": str(docc_input_path.parent),
+                    "items": [p.name for p in parent_items],
                 },
             )
 
