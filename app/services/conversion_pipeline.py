@@ -495,17 +495,19 @@ This would normally contain the converted Markdown content from your DocC archiv
                     },
                 )
 
-            # Debug: Verify Info.plist exists at the intended location
-            info_plist = docc_input_path / "Info.plist"
-            if not info_plist.exists():
-                logger.error(
-                    "Info.plist not found in bundle directory",
-                    extra={
-                        "bundle_path": str(docc_input_path),
-                        "files_in_bundle": list(docc_input_path.glob("*"))[:10],
-                    },
-                )
-                raise RuntimeError(f"Invalid DocC bundle: Info.plist not found at {info_plist}")
+            # Log what was found in bundle directory
+            bundle_contents = []
+            for item in sorted(docc_input_path.iterdir())[:20]:
+                bundle_contents.append(item.name)
+
+            logger.info(
+                "Bundle directory contents",
+                extra={
+                    "bundle_path": str(docc_input_path),
+                    "items": bundle_contents,
+                    "has_info_plist": (docc_input_path / "Info.plist").exists(),
+                },
+            )
 
             # Step 3: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
