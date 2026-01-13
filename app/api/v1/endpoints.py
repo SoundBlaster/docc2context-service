@@ -2,6 +2,7 @@
 
 import os
 import time
+import uuid
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
@@ -156,9 +157,21 @@ async def convert_file(file: UploadFile = File(...), request: Request = None):
                     input_zip_path=file_path, workspace=workspace
                 )
 
-                # Read the ZIP content before workspace cleanup
-                with open(output_zip_path, "rb") as zip_file:
-                    zip_content = zip_file.read()
+                # Copy output ZIP to a temporary location BEFORE workspace cleanup
+                # This ensures the file persists after workspace deletion
+                import tempfile
+                from pathlib import Path as PathlibPath
+
+                temp_dir = PathlibPath(tempfile.gettempdir()) / "docc2context-responses"
+                temp_dir.mkdir(exist_ok=True)
+
+                # Create unique temporary file with same extension
+                temp_output = temp_dir / f"{uuid.uuid4()}_output.zip"
+
+                # Copy the file
+                with open(output_zip_path, "rb") as src:
+                    with open(temp_output, "wb") as dst:
+                        dst.write(src.read())
 
                 # Log successful extraction (Task 5.3)
                 extraction_time = time.time() - extraction_start_time
@@ -170,15 +183,24 @@ async def convert_file(file: UploadFile = File(...), request: Request = None):
                     request_id=request_id,
                 )
 
-                # Create streaming response with ZIP content
+                # Create streaming response with ZIP file
                 zip_filename = safe_filename.replace(".zip", "_converted.zip")
 
-                from fastapi.responses import Response
+                from fastapi.responses import FileResponse
 
-                return Response(
-                    content=zip_content,
+                logger.info(
+                    "Sending converted ZIP file",
+                    extra={
+                        "temp_output_path": str(temp_output),
+                        "zip_filename": zip_filename,
+                        "temp_file_size": temp_output.stat().st_size,
+                    },
+                )
+
+                return FileResponse(
+                    path=temp_output,
                     media_type="application/zip",
-                    headers={"Content-Disposition": f'attachment; filename="{zip_filename}"'},
+                    filename=zip_filename,
                 )
 
             except Exception as conversion_error:
