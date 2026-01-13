@@ -22,7 +22,7 @@ RUN apt-get update && \
     libz-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone the docc2context repository
+# Clone the docc2context repository and checkout a stable version
 WORKDIR /build
 RUN git clone https://github.com/SoundBlaster/docc2context.git
 
@@ -52,9 +52,6 @@ COPY --from=swift-base /usr/lib/swift /usr/lib/swift
 ENV LD_LIBRARY_PATH=/usr/lib/swift/linux
 
 # Copy the compiled Swift CLI binary from the builder stage
-# The binary location depends on the Swift Package Manager output structure
-# Typically: .build/release/{executable-name}
-# We'll copy the entire .build/release directory and find the binary
 COPY --from=swift-builder /build/docc2context/.build/release/docc2context /usr/local/bin/docc2context
 
 # Ensure the binary has execute permissions
