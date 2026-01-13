@@ -5,9 +5,9 @@ Web service for converting Swift DocC archives to Markdown format.
 ## ⚠️ Security Notice
 
 This service processes **untrusted file uploads** and should be deployed with appropriate security measures. See:
-- **[SECURITY_AUDIT.md](SECURITY_AUDIT.md)** - Comprehensive security audit and vulnerability analysis
-- **[SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)** - Production deployment security checklist
-- **[SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md)** - Quick security guide for developers and operators
+- **[DOCS/SECURITY/SECURITY_AUDIT.md](DOCS/SECURITY/SECURITY_AUDIT.md)** - Comprehensive security audit and vulnerability analysis
+- **[DOCS/SECURITY/SECURITY_CHECKLIST.md](DOCS/SECURITY/SECURITY_CHECKLIST.md)** - Production deployment security checklist
+- **[DOCS/SECURITY/SECURITY_QUICKSTART.md](DOCS/SECURITY/SECURITY_QUICKSTART.md)** - Quick security guide for developers and operators
 
 **Key Security Features Implemented:**
 - ✅ Zip Slip / Path Traversal protection
@@ -433,25 +433,28 @@ This service implements comprehensive security hardening to protect against comm
 
 ### Security Documentation
 
-- **[SECURITY_AUDIT.md](SECURITY_AUDIT.md)** - Comprehensive 900+ line security audit
+- **[DOCS/SECURITY/SECURITY_AUDIT.md](DOCS/SECURITY/SECURITY_AUDIT.md)** - Comprehensive 900+ line security audit
   - Threat model and attack surface analysis
   - Detailed vulnerability analysis (5 critical, 2 high severity fixed)
   - Secure design patterns and mitigations
   - Deployment hardening advice
   - Red team notes and attack scenarios
-  
-- **[SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)** - Production deployment checklist
+
+- **[DOCS/SECURITY/SECURITY_CHECKLIST.md](DOCS/SECURITY/SECURITY_CHECKLIST.md)** - Production deployment checklist
   - Pre-deployment security configuration
   - Environment variables and secrets
   - Docker and network security
   - Monitoring and logging setup
   - Post-deployment verification
-  
-- **[SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md)** - Quick reference guide
+
+- **[DOCS/SECURITY/SECURITY_QUICKSTART.md](DOCS/SECURITY/SECURITY_QUICKSTART.md)** - Quick reference guide
   - Security testing commands
   - Common attack scenarios
   - Incident response procedures
   - Security FAQ
+
+- **[DOCS/SECURITY/SECURITY_IMPLEMENTATION_SUMMARY.md](DOCS/SECURITY/SECURITY_IMPLEMENTATION_SUMMARY.md)** - Implementation summary of all security fixes
+- **[DOCS/SECURITY/SECURITY_REVIEW_PHASE_6.md](DOCS/SECURITY/SECURITY_REVIEW_PHASE_6.md)** - Phase 6 security review results
 
 ### Running Security Tests
 
@@ -497,11 +500,40 @@ If you discover a security vulnerability:
 
 ## Documentation
 
+### Main Documentation Index
+
 - **API Documentation**: Available at `/docs` when the service is running
 - **Project Documentation**: See the `DOCS/` directory
 - **Work Plan**: `DOCS/Workplan.md`
 - **CI/CD Pipeline**: `.github/workflows/ci-cd.yml`
-- **Security Documentation**: See Security section above
+
+### Deployment Documentation
+
+See `DOCS/DEPLOYMENT/` for comprehensive deployment guides:
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md](DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md)** - Complete deployment guide
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_CHECKLIST.md](DOCS/DEPLOYMENT/DEPLOYMENT_CHECKLIST.md)** - Pre-deployment checklist
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_APPROVAL_CHECKLIST.md](DOCS/DEPLOYMENT/DEPLOYMENT_APPROVAL_CHECKLIST.md)** - Approval requirements
+- **[DOCS/DEPLOYMENT/ROLLBACK_RUNBOOK.md](DOCS/DEPLOYMENT/ROLLBACK_RUNBOOK.md)** - Rollback procedures
+- **[DOCS/DEPLOYMENT/PHASE5_SMOKE_TEST_SUMMARY.md](DOCS/DEPLOYMENT/PHASE5_SMOKE_TEST_SUMMARY.md)** - Smoke test results
+- **[DOCS/DEPLOYMENT/TESTING_RESULTS_PHASE_5.6.md](DOCS/DEPLOYMENT/TESTING_RESULTS_PHASE_5.6.md)** - Phase 5.6 testing results
+
+### Operations Documentation
+
+See `DOCS/OPERATIONS/` for operational procedures:
+- **[DOCS/OPERATIONS/OPERATIONS_GUIDE.md](DOCS/OPERATIONS/OPERATIONS_GUIDE.md)** - Daily operations guide
+- **[DOCS/OPERATIONS/TEAM_TRAINING_MATERIALS.md](DOCS/OPERATIONS/TEAM_TRAINING_MATERIALS.md)** - Team training resources
+
+### Incident Response
+
+See `DOCS/PLAYBOOKS/` for incident response procedures:
+- Service outage playbook
+- High error rate playbook
+- Resource exhaustion playbooks
+- Incident response checklist
+
+### Security Documentation
+
+See Security section above and `DOCS/SECURITY/` directory
 
 ## CI/CD Pipeline
 
@@ -607,8 +639,10 @@ If you encounter issues not listed here:
 
 1. Check the application logs for detailed error messages
 2. Review the [API Documentation](http://localhost:8000/docs) for endpoint details
-3. Consult the [Deployment Guide](DOCS/DEPLOYMENT.md) for production setup
-4. Open an issue on GitHub with:
+3. Consult the [Deployment Guide](DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md) for production setup
+4. Check the [Operations Guide](DOCS/OPERATIONS/OPERATIONS_GUIDE.md) for operational procedures
+5. Review [Incident Response Playbooks](DOCS/PLAYBOOKS/) for known issues
+6. Open an issue on GitHub with:
    - Error messages and stack traces
    - Steps to reproduce the issue
    - Your environment details (OS, Python version, Docker version)
