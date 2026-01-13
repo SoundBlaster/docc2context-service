@@ -463,21 +463,46 @@ This would normally contain the converted Markdown content from your DocC archiv
             extract_path = workspace / "extracted"
             await self.extract_archive(input_zip_path, extract_path)
 
-            # Step 2: Convert using Swift CLI
+            # Step 2: Find the actual DocC bundle directory
+            # The ZIP might contain the bundle at root level or in a subdirectory
+            docc_input_path = extract_path
+
+            # Check if extracted directory contains a single .doccarchive subdirectory
+            doccarchive_dirs = list(extract_path.glob("*.doccarchive"))
+            if len(doccarchive_dirs) == 1:
+                docc_input_path = doccarchive_dirs[0]
+                logger.info(
+                    "Found .doccarchive subdirectory",
+                    extra={
+                        "doccarchive_path": str(docc_input_path),
+                        "request_id": str(workspace.name),
+                    },
+                )
+            elif len(doccarchive_dirs) > 1:
+                logger.warning(
+                    "Multiple .doccarchive subdirectories found, using first",
+                    extra={
+                        "count": len(doccarchive_dirs),
+                        "directories": [str(d) for d in doccarchive_dirs],
+                    },
+                )
+                docc_input_path = doccarchive_dirs[0]
+
+            # Step 3: Convert using Swift CLI
             output_md_dir = workspace / "converted_output"
-            # docc2context expects the extracted directory, not the ZIP file
+            # docc2context expects a directory containing a DocC bundle
             # Don't create the directory - docc2context will create it with --force flag
             await self.convert_with_swift_cli(
-                input_path=extract_path,
+                input_path=docc_input_path,
                 output_path=output_md_dir,
                 workspace=workspace,
                 timeout=timeout,
             )
 
-            # Step 3: Collect all Markdown files
+            # Step 4: Collect all Markdown files
             markdown_files = await self.collect_markdown_files(workspace)
 
-            # Step 4: Create output ZIP
+            # Step 5: Create output ZIP
             output_zip_path = workspace / "output.zip"
             await self.create_output_zip(
                 markdown_files=markdown_files, output_zip_path=output_zip_path, base_path=workspace
