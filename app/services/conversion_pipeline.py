@@ -267,10 +267,12 @@ class ConversionPipeline:
                         "input_path": str(input_path),
                         "output_path": str(output_path),
                         "returncode": conversion_result.returncode,
+                        "stdout": conversion_result.stdout,
                         "stderr": conversion_result.stderr,
                     },
                 )
-                raise RuntimeError(f"Conversion failed: {conversion_result.stderr}")
+                error_msg = conversion_result.stdout or conversion_result.stderr or "Unknown error"
+                raise RuntimeError(f"Conversion failed: {error_msg}")
 
             # Check if output directory was created and contains files
             if not output_path.is_dir():

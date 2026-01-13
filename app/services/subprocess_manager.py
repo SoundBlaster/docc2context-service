@@ -134,6 +134,7 @@ class SubprocessManager:
                             "command": " ".join(command),
                             "returncode": result.returncode,
                             "attempt": attempt + 1,
+                            "stdout": result.stdout,
                             "stderr": result.stderr,
                         },
                     )
