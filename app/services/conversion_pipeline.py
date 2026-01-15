@@ -3,6 +3,7 @@
 import os
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from app.core.logging import get_logger
 from app.services.subprocess_manager import subprocess_manager
@@ -364,7 +365,9 @@ This would normally contain the converted Markdown content from your DocC archiv
         Returns:
             List[Path]: List of Markdown files found
         """
-        logger.info("Collecting Markdown files from output directory", extra={"output_dir": str(output_dir)})
+        logger.info(
+            "Collecting Markdown files from output directory", extra={"output_dir": str(output_dir)}
+        )
 
         markdown_files = []
 
@@ -521,7 +524,7 @@ This would normally contain the converted Markdown content from your DocC archiv
 
             # Also log the parent directory to understand structure
             parent_items = list(docc_input_path.parent.glob("*"))
-            parent_item_details = {}
+            parent_item_details: dict[str, Any] = {}
             for p in parent_items[:10]:  # First 10 items
                 try:
                     parent_item_details[p.name] = {
@@ -531,7 +534,13 @@ This would normally contain the converted Markdown content from your DocC archiv
                         "size": p.stat().st_size if p.is_file() else 0,
                     }
                 except Exception as e:
-                    parent_item_details[p.name] = {"error": str(e)}
+                    parent_item_details[p.name] = {
+                        "is_dir": False,
+                        "is_file": False,
+                        "is_symlink": False,
+                        "size": 0,
+                        "error": str(e),
+                    }
 
             logger.info(
                 "Parent directory contents",
@@ -560,7 +569,9 @@ This would normally contain the converted Markdown content from your DocC archiv
             # Step 6: Create output ZIP
             output_zip_path = workspace / "output.zip"
             await self.create_output_zip(
-                markdown_files=markdown_files, output_zip_path=output_zip_path, base_path=output_md_dir
+                markdown_files=markdown_files,
+                output_zip_path=output_zip_path,
+                base_path=output_md_dir,
             )
 
             logger.info(

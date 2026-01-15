@@ -1,9 +1,7 @@
 """API v1 endpoints implementation"""
 
-import io
 import os
 import time
-import uuid
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -286,6 +284,7 @@ async def debug_docc2context():
     Returns diagnostic information about the docc2context binary setup
     """
     from pathlib import Path
+
     from app.core.config import settings
     from app.services.subprocess_manager import subprocess_manager
 
@@ -311,22 +310,10 @@ async def debug_docc2context():
         debug_info["version_stderr"] = result.stderr[:500] if result.stderr else None
         debug_info["version_returncode"] = result.returncode
 
-        logger.info(
-            "Debug endpoint called - docc2context info",
-            extra=debug_info
-        )
+        logger.info("Debug endpoint called - docc2context info", extra=debug_info)
 
-        return JSONResponse(
-            status_code=200,
-            content=debug_info
-        )
+        return JSONResponse(status_code=200, content=debug_info)
     except Exception as e:
         debug_info["error"] = str(e)
-        logger.error(
-            "Debug endpoint error",
-            extra=debug_info
-        )
-        return JSONResponse(
-            status_code=500,
-            content=debug_info
-        )
+        logger.error("Debug endpoint error", extra=debug_info)
+        return JSONResponse(status_code=500, content=debug_info)
