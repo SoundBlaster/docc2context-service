@@ -254,9 +254,10 @@ class TestCommandInjectionProtection:
         # Use the actual configured CLI path from subprocess_manager
         cli_path = subprocess_manager.swift_cli_path
         valid_commands = [
-            [cli_path, "input.zip", "output.md"],
-            [cli_path, "--version"],
+            [cli_path, "input.zip", "--output", "output_dir"],
+            [cli_path, "input.zip", "--output", "output_dir", "--force"],
             [cli_path, "--help"],
+            [cli_path, "-h"],
         ]
 
         for cmd in valid_commands:
