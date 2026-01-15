@@ -2,6 +2,22 @@
 
 Web service for converting Swift DocC archives to Markdown format.
 
+## ⚠️ Security Notice
+
+This service processes **untrusted file uploads** and should be deployed with appropriate security measures. See:
+- **[DOCS/SECURITY/SECURITY_AUDIT.md](DOCS/SECURITY/SECURITY_AUDIT.md)** - Comprehensive security audit and vulnerability analysis
+- **[DOCS/SECURITY/SECURITY_CHECKLIST.md](DOCS/SECURITY/SECURITY_CHECKLIST.md)** - Production deployment security checklist
+- **[DOCS/SECURITY/SECURITY_QUICKSTART.md](DOCS/SECURITY/SECURITY_QUICKSTART.md)** - Quick security guide for developers and operators
+
+**Key Security Features Implemented:**
+- ✅ Zip Slip / Path Traversal protection
+- ✅ Symlink attack prevention
+- ✅ Command injection prevention
+- ✅ Decompression bomb protection
+- ✅ Container security hardening (non-root user, resource limits)
+- ✅ Input validation (file size, type, structure)
+- ✅ Rate limiting support
+
 ## Overview
 
 DocC2Context Service is a FastAPI-based web application that provides a user-friendly interface for converting Swift DocC archives to Markdown format. The service includes:
@@ -10,6 +26,7 @@ DocC2Context Service is a FastAPI-based web application that provides a user-fri
 - Web interface with drag-and-drop upload functionality
 - Real-time progress tracking
 - Comprehensive validation and error handling
+- **Production-ready security hardening**
 
 ## Features
 
@@ -371,12 +388,152 @@ DEBUG=True
 MAX_FILE_SIZE=104857600  # 100MB
 ```
 
+## Security
+
+### Security Features
+
+This service implements comprehensive security hardening to protect against common attacks:
+
+**Input Validation:**
+- File size limits (100MB default)
+- ZIP structure validation
+- Magic number verification
+- Filename sanitization (null bytes, control characters, path traversal)
+- Decompression bomb protection (5:1 ratio limit, 500MB max uncompressed)
+- File count limits (5000 files max)
+- Directory depth limits (10 levels max)
+
+**ZIP Security:**
+- **Zip Slip Protection**: All paths validated with `resolve()` to prevent path traversal
+- **Symlink Prevention**: Symlinks detected in metadata and blocked during extraction
+- **Nested ZIP Detection**: Nested archives detected and blocked
+- **Safe Extraction**: Files extracted with restrictive permissions (0o600)
+
+**Command Injection Prevention:**
+- Whitelist-based command validation
+- Argument sanitization (dangerous characters blocked)
+- Environment variable filtering
+- Null byte detection
+- Always uses `shell=False` for subprocess execution
+
+**Container Security:**
+- Non-root user (appuser, UID 1000)
+- Security options: `no-new-privileges:true`, capability dropping
+- Resource limits: 2 CPU cores, 2GB memory
+- Temporary filesystem mounted with `noexec`, `nosuid`, `nodev`
+- Health checks configured
+
+**API Security:**
+- HTTPS redirect in production
+- Security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, etc.)
+- CORS configuration
+- Rate limiting support (requires Redis)
+- Request timeouts (30s default)
+- Request size limits
+
+### Security Documentation
+
+- **[DOCS/SECURITY/SECURITY_AUDIT.md](DOCS/SECURITY/SECURITY_AUDIT.md)** - Comprehensive 900+ line security audit
+  - Threat model and attack surface analysis
+  - Detailed vulnerability analysis (5 critical, 2 high severity fixed)
+  - Secure design patterns and mitigations
+  - Deployment hardening advice
+  - Red team notes and attack scenarios
+
+- **[DOCS/SECURITY/SECURITY_CHECKLIST.md](DOCS/SECURITY/SECURITY_CHECKLIST.md)** - Production deployment checklist
+  - Pre-deployment security configuration
+  - Environment variables and secrets
+  - Docker and network security
+  - Monitoring and logging setup
+  - Post-deployment verification
+
+- **[DOCS/SECURITY/SECURITY_QUICKSTART.md](DOCS/SECURITY/SECURITY_QUICKSTART.md)** - Quick reference guide
+  - Security testing commands
+  - Common attack scenarios
+  - Incident response procedures
+  - Security FAQ
+
+- **[DOCS/SECURITY/SECURITY_IMPLEMENTATION_SUMMARY.md](DOCS/SECURITY/SECURITY_IMPLEMENTATION_SUMMARY.md)** - Implementation summary of all security fixes
+- **[DOCS/SECURITY/SECURITY_REVIEW_PHASE_6.md](DOCS/SECURITY/SECURITY_REVIEW_PHASE_6.md)** - Phase 6 security review results
+
+### Running Security Tests
+
+```bash
+# Run comprehensive security test suite
+python -m pytest tests/test_security.py -v
+
+# Run all tests (includes security)
+make test
+
+# Static security analysis
+pip install bandit
+bandit -r app/ -ll
+
+# Dependency vulnerability scan
+pip install safety
+safety check --file requirements.txt
+
+# Container vulnerability scan
+docker run --rm -v $(pwd):/app aquasec/trivy filesystem /app
+```
+
+### Security Best Practices for Deployment
+
+1. **Never disable security features** in production
+2. **Configure specific CORS origins** (remove `["*"]`)
+3. **Disable API documentation** in production (`/docs`, `/redoc`)
+4. **Set up Redis** for proper rate limiting
+5. **Use HTTPS** with valid TLS certificates
+6. **Monitor security logs** for suspicious activity
+7. **Keep dependencies updated** with security patches
+8. **Review SECURITY_CHECKLIST.md** before each deployment
+
+### Reporting Security Issues
+
+If you discover a security vulnerability:
+1. **DO NOT** open a public GitHub issue
+2. Contact your organization's security team using your standard incident-reporting channel (for example, a monitored security email address or incident hotline)
+3. Include details of the vulnerability and steps to reproduce
+4. Allow time for patching before public disclosure
+
+> **TODO:** Configure the specific security contact information for your deployment before going to production.
+
 ## Documentation
+
+### Main Documentation Index
 
 - **API Documentation**: Available at `/docs` when the service is running
 - **Project Documentation**: See the `DOCS/` directory
 - **Work Plan**: `DOCS/Workplan.md`
 - **CI/CD Pipeline**: `.github/workflows/ci-cd.yml`
+
+### Deployment Documentation
+
+See `DOCS/DEPLOYMENT/` for comprehensive deployment guides:
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md](DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md)** - Complete deployment guide
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_CHECKLIST.md](DOCS/DEPLOYMENT/DEPLOYMENT_CHECKLIST.md)** - Pre-deployment checklist
+- **[DOCS/DEPLOYMENT/DEPLOYMENT_APPROVAL_CHECKLIST.md](DOCS/DEPLOYMENT/DEPLOYMENT_APPROVAL_CHECKLIST.md)** - Approval requirements
+- **[DOCS/DEPLOYMENT/ROLLBACK_RUNBOOK.md](DOCS/DEPLOYMENT/ROLLBACK_RUNBOOK.md)** - Rollback procedures
+- **[DOCS/DEPLOYMENT/PHASE5_SMOKE_TEST_SUMMARY.md](DOCS/DEPLOYMENT/PHASE5_SMOKE_TEST_SUMMARY.md)** - Smoke test results
+- **[DOCS/DEPLOYMENT/TESTING_RESULTS_PHASE_5.6.md](DOCS/DEPLOYMENT/TESTING_RESULTS_PHASE_5.6.md)** - Phase 5.6 testing results
+
+### Operations Documentation
+
+See `DOCS/OPERATIONS/` for operational procedures:
+- **[DOCS/OPERATIONS/OPERATIONS_GUIDE.md](DOCS/OPERATIONS/OPERATIONS_GUIDE.md)** - Daily operations guide
+- **[DOCS/OPERATIONS/TEAM_TRAINING_MATERIALS.md](DOCS/OPERATIONS/TEAM_TRAINING_MATERIALS.md)** - Team training resources
+
+### Incident Response
+
+See `DOCS/PLAYBOOKS/` for incident response procedures:
+- Service outage playbook
+- High error rate playbook
+- Resource exhaustion playbooks
+- Incident response checklist
+
+### Security Documentation
+
+See Security section above and `DOCS/SECURITY/` directory
 
 ## CI/CD Pipeline
 
@@ -482,8 +639,10 @@ If you encounter issues not listed here:
 
 1. Check the application logs for detailed error messages
 2. Review the [API Documentation](http://localhost:8000/docs) for endpoint details
-3. Consult the [Deployment Guide](DOCS/DEPLOYMENT.md) for production setup
-4. Open an issue on GitHub with:
+3. Consult the [Deployment Guide](DOCS/DEPLOYMENT/DEPLOYMENT_RUNBOOK.md) for production setup
+4. Check the [Operations Guide](DOCS/OPERATIONS/OPERATIONS_GUIDE.md) for operational procedures
+5. Review [Incident Response Playbooks](DOCS/PLAYBOOKS/) for known issues
+6. Open an issue on GitHub with:
    - Error messages and stack traces
    - Steps to reproduce the issue
    - Your environment details (OS, Python version, Docker version)

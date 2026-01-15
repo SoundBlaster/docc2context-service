@@ -1,15 +1,19 @@
 """API v1 endpoints implementation"""
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
-from fastapi.responses import JSONResponse
+import os
+import time
 
-from app.core.logging import get_logger
+from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
+
+from app.core.logging import StructuredLogger, get_logger, set_request_id
 from app.services.conversion_pipeline import conversion_pipeline
 from app.services.file_validation import validate_upload_file
 from app.services.health_service import health_service
 from app.services.workspace_manager import workspace_manager
 
 logger = get_logger(__name__)
+structured_logger = StructuredLogger(__name__)
 
 # Create router for endpoints
 router = APIRouter()
@@ -72,7 +76,7 @@ async def health_check(
 
 
 @router.post("/convert")
-async def convert_file(file: UploadFile = File(...)):
+async def convert_file(file: UploadFile = File(...), request: Request = None):
     """
     Convert DocC archive to Markdown
 
@@ -81,6 +85,7 @@ async def convert_file(file: UploadFile = File(...)):
 
     Args:
         file: The DocC archive file to convert
+        request: Request object for extracting headers
 
     Returns:
         StreamingResponse: ZIP file containing converted Markdown content
@@ -107,6 +112,13 @@ async def convert_file(file: UploadFile = File(...)):
         - 413: File size exceeds 100MB limit
         - 500: Conversion failed (includes CLI stderr for debugging)
     """
+    # Set request ID for tracing
+    request_id = request.headers.get("X-Request-ID") if request else None
+    set_request_id(request_id)
+
+    extraction_start_time = time.time()
+    file_size = 0
+
     async with workspace_manager.create_workspace() as workspace:
         try:
             logger.info(
@@ -120,6 +132,7 @@ async def convert_file(file: UploadFile = File(...)):
 
             # Validate the uploaded file
             content, safe_filename = await validate_upload_file(file)
+            file_size = len(content)
 
             # Store the file in the workspace
             file_path = workspace_manager.get_file_path(workspace, safe_filename)
@@ -132,7 +145,7 @@ async def convert_file(file: UploadFile = File(...)):
                 extra={
                     "safe_filename": safe_filename,
                     "file_path": str(file_path),
-                    "file_size": len(content),
+                    "file_size": file_size,
                     "workspace_path": str(workspace),
                 },
             )
@@ -143,24 +156,69 @@ async def convert_file(file: UploadFile = File(...)):
                     input_zip_path=file_path, workspace=workspace
                 )
 
-                # Read the ZIP content before workspace cleanup
+                # Read the ZIP file content into memory
+                # This happens BEFORE workspace cleanup to ensure file is available
                 with open(output_zip_path, "rb") as zip_file:
                     zip_content = zip_file.read()
+
+                logger.info(
+                    "ZIP file read successfully",
+                    extra={
+                        "output_zip_path": str(output_zip_path),
+                        "zip_size": len(zip_content),
+                    },
+                )
+
+                # Log successful extraction (Task 5.3)
+                extraction_time = time.time() - extraction_start_time
+                structured_logger.log_extraction(
+                    status="success",
+                    file_name=safe_filename,
+                    file_size=file_size,
+                    extraction_time=extraction_time,
+                    request_id=request_id,
+                )
 
                 # Create streaming response with ZIP content
                 zip_filename = safe_filename.replace(".zip", "_converted.zip")
 
-                from fastapi.responses import Response
+                logger.info(
+                    "Sending converted ZIP file",
+                    extra={
+                        "zip_filename": zip_filename,
+                        "zip_size": len(zip_content),
+                        "content_length": len(zip_content),
+                    },
+                )
 
-                return Response(
-                    content=zip_content,
+                # Use StreamingResponse for proper binary handling
+                # This avoids any encoding/decoding issues with Response class
+                def generate_zip():
+                    yield zip_content
+
+                return StreamingResponse(
+                    generate_zip(),
                     media_type="application/zip",
-                    headers={"Content-Disposition": f'attachment; filename="{zip_filename}"'},
+                    headers={
+                        "Content-Disposition": f'attachment; filename="{zip_filename}"',
+                        "Content-Length": str(len(zip_content)),
+                    },
                 )
 
             except Exception as conversion_error:
                 # Handle conversion errors gracefully
                 error_message = str(conversion_error)
+                extraction_time = time.time() - extraction_start_time
+
+                # Log failed extraction (Task 5.3)
+                structured_logger.log_extraction(
+                    status="failure",
+                    file_name=file.filename,
+                    file_size=file_size,
+                    extraction_time=extraction_time,
+                    error_msg=error_message,
+                    request_id=request_id,
+                )
 
                 # Check if it's a Swift CLI error
                 if "Conversion failed:" in error_message:
@@ -194,6 +252,17 @@ async def convert_file(file: UploadFile = File(...)):
             # Re-raise HTTP exceptions (validation errors, conversion errors)
             raise
         except Exception as e:
+            # Log unexpected error (Task 5.3)
+            extraction_time = time.time() - extraction_start_time
+            structured_logger.log_extraction(
+                status="failure",
+                file_name=file.filename,
+                file_size=file_size,
+                extraction_time=extraction_time,
+                error_msg=str(e),
+                request_id=request_id,
+            )
+
             logger.error(
                 "Unexpected error in convert endpoint",
                 extra={
@@ -205,3 +274,46 @@ async def convert_file(file: UploadFile = File(...)):
             raise HTTPException(
                 status_code=500, detail="Internal server error during file processing"
             )
+
+
+@router.get("/debug/docc2context")
+async def debug_docc2context():
+    """
+    Debug endpoint to test docc2context binary availability and functionality
+
+    Returns diagnostic information about the docc2context binary setup
+    """
+    from pathlib import Path
+
+    from app.core.config import settings
+    from app.services.subprocess_manager import subprocess_manager
+
+    debug_info = {
+        "binary_path": settings.swift_cli_path,
+        "binary_exists": False,
+        "binary_executable": False,
+        "version_check": None,
+        "version_stdout": None,
+        "version_stderr": None,
+        "version_returncode": None,
+    }
+
+    try:
+        swift_path = Path(settings.swift_cli_path)
+        debug_info["binary_exists"] = swift_path.exists()
+        debug_info["binary_executable"] = os.access(settings.swift_cli_path, os.X_OK)
+
+        # Try to check version
+        result = await subprocess_manager.check_swift_binary()
+        debug_info["version_check"] = result.success
+        debug_info["version_stdout"] = result.stdout[:500] if result.stdout else None
+        debug_info["version_stderr"] = result.stderr[:500] if result.stderr else None
+        debug_info["version_returncode"] = result.returncode
+
+        logger.info("Debug endpoint called - docc2context info", extra=debug_info)
+
+        return JSONResponse(status_code=200, content=debug_info)
+    except Exception as e:
+        debug_info["error"] = str(e)
+        logger.error("Debug endpoint error", extra=debug_info)
+        return JSONResponse(status_code=500, content=debug_info)

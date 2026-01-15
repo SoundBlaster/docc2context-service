@@ -190,6 +190,10 @@ class FileUploader {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/api/v1/convert', true);
 
+        // Set response type to arraybuffer for binary ZIP data
+        // This is critical - without this, binary data gets corrupted by text decoding
+        xhr.responseType = 'arraybuffer';
+
         // Track upload progress
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
@@ -204,6 +208,7 @@ class FileUploader {
                 const contentType = xhr.getResponseHeader('content-type');
                 if (contentType && contentType.includes('application/zip')) {
                     // Download the converted file
+                    // xhr.response is already an ArrayBuffer, use it directly
                     const blob = new Blob([xhr.response], { type: 'application/zip' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -215,12 +220,16 @@ class FileUploader {
                     window.URL.revokeObjectURL(url);
                 } else {
                     // Handle JSON error response
-                    const errorData = JSON.parse(xhr.response);
+                    // For JSON responses, we need to decode the ArrayBuffer
+                    const decoder = new TextDecoder();
+                    const text = decoder.decode(xhr.response);
+                    const errorData = JSON.parse(text);
                     throw new Error(errorData.detail || 'Unknown error occurred');
                 }
             } else {
                 // Handle error response
-                const errorText = xhr.responseText;
+                const decoder = new TextDecoder();
+                const errorText = decoder.decode(xhr.response);
                 throw new Error(`HTTP ${xhr.status}: ${errorText}`);
             }
         };

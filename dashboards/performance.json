@@ -1,0 +1,111 @@
+{
+  "dashboard": {
+    "title": "Performance Anomalies",
+    "description": "Monitor extraction performance and system anomalies",
+    "panels": [
+      {
+        "id": "avg_extraction_time",
+        "title": "Average Extraction Time (Success Only)",
+        "type": "line",
+        "query": "event_type:extraction AND status:success",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "avg(extraction_time_seconds)",
+          "intervalAuto": true
+        }
+      },
+      {
+        "id": "p95_extraction_time",
+        "title": "P95 Extraction Time (Last 24h)",
+        "type": "gauge",
+        "query": "event_type:extraction AND status:success AND @timestamp:(now-24h TO now)",
+        "visualization": {
+          "metricType": "percentile",
+          "percentile": 95,
+          "field": "extraction_time_seconds",
+          "max": 30
+        }
+      },
+      {
+        "id": "extraction_time_by_size",
+        "title": "Extraction Time vs File Size",
+        "type": "scatter",
+        "query": "event_type:extraction AND status:success",
+        "visualization": {
+          "xAxisField": "file_size_bytes",
+          "yAxisField": "extraction_time_seconds",
+          "colorField": "extraction_time_seconds"
+        }
+      },
+      {
+        "id": "anomalies",
+        "title": "Performance Anomalies Detected",
+        "type": "table",
+        "query": "event_type:performance_anomaly",
+        "visualization": {
+          "columns": ["metric", "value", "threshold", "@timestamp", "request_id"],
+          "sortBy": "@timestamp",
+          "sortOrder": "desc",
+          "limit": 30
+        }
+      },
+      {
+        "id": "success_vs_failure_time",
+        "title": "Average Time: Success vs Failure",
+        "type": "bar",
+        "query": "event_type:extraction",
+        "visualization": {
+          "xAxisField": "status",
+          "yAxisField": "avg(extraction_time_seconds)",
+          "colors": {
+            "success": "green",
+            "failure": "red"
+          }
+        }
+      },
+      {
+        "id": "extraction_rate",
+        "title": "Extraction Rate (files/hour)",
+        "type": "line",
+        "query": "event_type:extraction AND status:success",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "count",
+          "intervalAuto": true,
+          "normalizeByTime": true
+        }
+      },
+      {
+        "id": "slowest_extractions",
+        "title": "Slowest Extractions",
+        "type": "table",
+        "query": "event_type:extraction AND status:success",
+        "visualization": {
+          "columns": ["file_name", "file_size_bytes", "extraction_time_seconds", "@timestamp", "request_id"],
+          "sortBy": "extraction_time_seconds",
+          "sortOrder": "desc",
+          "limit": 20
+        }
+      },
+      {
+        "id": "anomaly_timeline",
+        "title": "Anomalies Over Time",
+        "type": "line",
+        "query": "event_type:performance_anomaly",
+        "visualization": {
+          "xAxisField": "@timestamp",
+          "yAxisField": "doc_count",
+          "groupBy": "metric",
+          "intervalAuto": true
+        }
+      }
+    ],
+    "filters": [
+      {
+        "field": "event_type",
+        "value": ["extraction", "performance_anomaly"],
+        "operator": "is_any"
+      }
+    ]
+  }
+}

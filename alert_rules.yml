@@ -1,0 +1,69 @@
+# Alert rules for DocC2Context Service (Task 5.2)
+groups:
+  - name: docc2context_alerts
+    interval: 30s
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0)
+          and
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 10% ({{ $value | humanizePercentage }})"
+
+      # High extraction failure rate alert
+      - alert: HighExtractionFailureRate
+        expr: |
+          (sum(rate(zip_extractions_total{status="failed"}[5m])) / (sum(rate(zip_extractions_total[5m])) > 0))
+          > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High ZIP extraction failure rate"
+          description: "Extraction failure rate is {{ $value | humanizePercentage }}"
+
+      # Memory usage alert
+      - alert: HighMemoryUsage
+        expr: resource_usage{resource_type="memory_mb"} > 1800
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Memory usage is high"
+          description: "Memory usage: {{ $value | humanize }}MB"
+
+      # CPU usage alert
+      - alert: HighCPUUsage
+        expr: resource_usage{resource_type="cpu_percent"} > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU usage is high"
+          description: "CPU usage: {{ $value | humanize }}%"
+
+      # Disk space alert
+      - alert: LowDiskSpace
+        expr: resource_usage{resource_type="disk_free_gb"} < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Free disk space: {{ $value | humanize }}GB"
+
+      # Service up check
+      - alert: ServiceDown
+        expr: up{job="docc2context"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DocC2Context service is down"
+          description: "Service has been down for more than 1 minute"
